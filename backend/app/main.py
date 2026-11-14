@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 import os
+import logging
 from pathlib import Path
 from uuid import uuid4
 
@@ -15,6 +16,10 @@ from .database import AstronautRow, Base, CheckInRow, InventoryRow, create_datab
 from .investigation import FixtureAdapter, InvestigationAdapter, UnknownFixture
 from .schemas import Astronaut, CheckIn, CheckInCreate, HistoryPoint, InventoryItem, InventoryUpdate, InvestigationRequest, InvestigationResponse
 from .seed import seed
+from .schemas import EvaluationRequest
+from vendor.member3_stable.engine.models import InvestigationResponse as EngineResponse
+
+logger = logging.getLogger(__name__)
 
 
 def db(request: Request):
@@ -43,7 +48,12 @@ def profile(session, row):
     return Astronaut(id=row.id, role=row.role, baseline=row.baseline, sleepBaseline=row.sleepBaseline, provenance=latest.provenance if latest else "Synthetic profile v1", **readings)
 
 
-def create_app(database_url: str | None = None, *, adapter: InvestigationAdapter | None = None, seed_demo: bool = True):
+def create_app(database_url: str | None = None, *, adapter: InvestigationAdapter | None = None, seed_demo: bool = True, investigation_mode: str | None = None):
+    mode = investigation_mode if investigation_mode is not None else os.getenv("MEDNAV_INVESTIGATION_MODE", "fixture")
+    if mode not in ("fixture", "real"):
+        raise ValueError("Investigation mode must be fixture or real")
+    if mode == "real" and adapter is not None:
+        raise ValueError("Fixture adapter cannot be injected into real mode")
     default_path = Path(__file__).resolve().parents[1] / "mednav.db"
     url = database_url or os.getenv("MEDNAV_DATABASE_URL", f"sqlite:///{default_path.as_posix()}")
     engine, sessions = create_database(url)
@@ -63,7 +73,10 @@ def create_app(database_url: str | None = None, *, adapter: InvestigationAdapter
     app = FastAPI(title="MEDNAV Synthetic Backend", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None)
     app.state.sessions = sessions
     app.state.engine = engine
-    app.state.investigation_adapter = adapter if adapter is not None else FixtureAdapter()
+    app.state.investigation_mode = mode
+    from .real_engine import RealEngineService
+    app.state.real_engine = RealEngineService() if mode == "real" else None
+    app.state.investigation_adapter = (adapter if adapter is not None else FixtureAdapter()) if mode == "fixture" else None
     app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"], allow_methods=["GET", "POST", "PATCH"], allow_headers=["Content-Type"])
 
     @app.exception_handler(RequestValidationError)
@@ -126,6 +139,8 @@ def create_app(database_url: str | None = None, *, adapter: InvestigationAdapter
 
     @app.post("/api/v1/investigations", response_model=InvestigationResponse)
     def investigate(body: InvestigationRequest, request: Request, session: Session = Depends(db)):
+        if request.app.state.investigation_mode == "real":
+            raise HTTPException(503, "Real engine is available internally; public investigation contract approval required")
         row = session.get(CheckInRow, body.check_in_id)
         if row is None:
             raise HTTPException(404, "Check-in not found")
@@ -136,6 +151,24 @@ def create_app(database_url: str | None = None, *, adapter: InvestigationAdapter
             raise HTTPException(422, "No demo fixture available") from None
         # Validate adapter outputs too, preserving invariants at the integration boundary.
         return InvestigationResponse.model_validate(result)
+
+    @app.post("/api/v1/investigations/evaluate", response_model=EngineResponse)
+    def evaluate(body: EvaluationRequest, session: Session = Depends(db)):
+        if session.get(CheckInRow, body.check_in_id) is None:
+            raise HTTPException(404, "Check-in not found")
+        from .real_engine import RealEngineService, SimulationContext
+        try:
+            result = RealEngineService().evaluate(
+                session, body.check_in_id,
+                SimulationContext(communication_status=body.communication_status, emergency_override=body.emergency_override),
+            )
+            return EngineResponse.model_validate(result.model_dump(mode="json"))
+        except (ImportError, FileNotFoundError):
+            logger.exception("Stable evaluation service unavailable")
+            raise HTTPException(503, "Evaluation service unavailable") from None
+        except Exception:
+            logger.exception("Stable evaluation failed")
+            raise HTTPException(500, "Evaluation failed") from None
 
     return app
 

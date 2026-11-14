@@ -1,0 +1,4 @@
+# Preserve the delivered Member4 package bytes across Windows/Linux checkouts.
+vendor/member4/** -text
+vendor/member4_osd575/** -text
+vendor/member3_stable/** -text

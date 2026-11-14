@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="12" time="3.313" timestamp="2026-11-14T14:14:26.667513+06:30" hostname="DESKTOP-JO8V4K1"><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[normal]" time="0.178"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:28.334284+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Selected symptom_review_checklist (utility 3.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (excluded): no matching evidence gap or record. review_equipment_status (excluded): no matching evidence gap or record. review_sleep_workload (utility 2.5): sleep differs from baseline. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.", "missing_data": [], "next_check": {"id": "symptom_review_checklist", "label": "Open the symptom review form", "prototype_only": true, "requires_equipment": []}, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": [], "safety_flags": [], "status": "needs_review"}, "case": "normal", "expected_status": "needs_review"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[missing_bp]" time="0.179"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:28.514922+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Unknown measurements: systolic_bp_mm_hg, diastolic_bp_mm_hg. Selected measure_blood_pressure (utility 4.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (utility 4.5): BP evidence gaps: diastolic_bp_mm_hg, systolic_bp_mm_hg. review_equipment_status (excluded): no matching evidence gap or record. review_sleep_workload (utility 2.5): sleep differs from baseline. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.", "missing_data": ["systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": {"id": "measure_blood_pressure", "label": "Open the prototype blood-pressure workflow", "prototype_only": true, "requires_equipment": ["bp_monitor"]}, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": [], "safety_flags": [], "status": "needs_review"}, "case": "missing_bp", "expected_status": "needs_review"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[unavailable]" time="0.154"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:28.690533+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Unknown measurements: systolic_bp_mm_hg, diastolic_bp_mm_hg. Selected symptom_review_checklist (utility 3.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (excluded): bp_monitor unavailable. review_equipment_status (utility 1.5): BP evidence blocked by monitor availability. review_sleep_workload (utility 2.5): sleep differs from baseline. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.", "missing_data": ["systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": {"id": "symptom_review_checklist", "label": "Open the symptom review form", "prototype_only": true, "requires_equipment": []}, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": ["bp_monitor unavailable"], "safety_flags": [], "status": "needs_review"}, "case": "unavailable", "expected_status": "needs_review"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[unusable]" time="0.132"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:28.828442+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Unknown measurements: systolic_bp_mm_hg, diastolic_bp_mm_hg. Selected symptom_review_checklist (utility 3.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (excluded): bp_monitor unavailable. review_equipment_status (utility 1.5): BP evidence blocked by monitor availability. review_sleep_workload (utility 2.5): sleep differs from baseline. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.", "missing_data": ["systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": {"id": "symptom_review_checklist", "label": "Open the symptom review form", "prototype_only": true, "requires_equipment": []}, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": ["bp_monitor unavailable"], "safety_flags": [], "status": "needs_review"}, "case": "unusable", "expected_status": "needs_review"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[override]" time="0.118"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:28.949438+00:00", "prototype:mednav_rules_demo-2"], "explanation": "Follow the mission-approved emergency workflow and contact the crew medical officer. No diagnosis is established.", "missing_data": ["systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": null, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": [], "safety_flags": ["approved_emergency_protocol_required"], "status": "escalate"}, "case": "override", "expected_status": "escalate"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[empty_catalog]" time="0.118"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:29.066876+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Unknown measurements: systolic_bp_mm_hg, diastolic_bp_mm_hg. No feasible matching checklist. Request crew medical officer review. contact_medical_officer (excluded): outside candidate allowlist. measure_blood_pressure (excluded): outside candidate allowlist. review_equipment_status (excluded): outside candidate allowlist. review_sleep_workload (excluded): outside candidate allowlist. symptom_review_checklist (excluded): outside candidate allowlist. No diagnosis is established.", "missing_data": ["systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": null, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": [], "safety_flags": [], "status": "insufficient_evidence"}, "case": "empty_catalog", "expected_status": "insufficient_evidence"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[repeat]" time="0.119"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:29.186704+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Unknown measurements: systolic_bp_mm_hg, diastolic_bp_mm_hg. Selected measure_blood_pressure (utility 4.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (utility 4.5): BP evidence gaps: diastolic_bp_mm_hg, systolic_bp_mm_hg. review_equipment_status (excluded): no matching evidence gap or record. review_sleep_workload (utility 2.5): sleep differs from baseline. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.", "missing_data": ["systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": {"id": "measure_blood_pressure", "label": "Open the prototype blood-pressure workflow", "prototype_only": true, "requires_equipment": ["bp_monitor"]}, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue.", "resting_hr_bpm is above the recorded personal baseline.", "resting_hr_bpm: current 88, personal baseline 70.", "sleep_hours is below the recorded personal baseline.", "sleep_hours: current 4.2, personal baseline 7.3."], "requires_medical_officer_review": true, "resource_constraints": [], "safety_flags": [], "status": "needs_review"}, "case": "repeat", "expected_status": "needs_review"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[invalid]" time="0.120"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_saved_api_to_real_engine[unknown_all]" time="0.119"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+{"actual": {"diagnosis": null, "evidence_sources": ["synthetic:Crew A@2026-11-14T07:44:29.430364+00:00", "prototype:mednav_rules_demo-2", "prototype:mednav_catalog_v2"], "explanation": "Unknown measurements: resting_hr_bpm, sleep_hours, systolic_bp_mm_hg, diastolic_bp_mm_hg. Selected measure_blood_pressure (utility 4.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (utility 4.5): BP evidence gaps: diastolic_bp_mm_hg, systolic_bp_mm_hg. review_equipment_status (excluded): no matching evidence gap or record. review_sleep_workload (excluded): no matching evidence gap or record. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.", "missing_data": ["resting_hr_bpm", "sleep_hours", "systolic_bp_mm_hg", "diastolic_bp_mm_hg"], "next_check": {"id": "measure_blood_pressure", "label": "Open the prototype blood-pressure workflow", "prototype_only": true, "requires_equipment": ["bp_monitor"]}, "observations": ["Reported symptoms: Headache, Dizziness, Fatigue."], "requires_medical_officer_review": true, "resource_constraints": [], "safety_flags": [], "status": "needs_review"}, "case": "unknown_all", "expected_status": "needs_review"}
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_offline_fresh_engine_import_and_evaluation" time="0.516"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_context_and_research_boundaries" time="0.001"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase><testcase classname="integration.trial_tests" name="test_engine_rejects_stale_available_list_with_unusable_inventory" time="0.001"><system-out>--------------------------------- Captured Log ---------------------------------
+
+--------------------------------- Captured Out ---------------------------------
+
+</system-out><system-err>--------------------------------- Captured Err ---------------------------------
+
+</system-err></testcase></testsuite></testsuites>

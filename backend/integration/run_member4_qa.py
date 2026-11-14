@@ -18,13 +18,13 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "vendor/member4"
 
 
-def run(mode):
-    results = ROOT / "qa_results"
+def run(mode, package=PACKAGE, results=None):
+    results = Path(results) if results else ROOT / "qa_results"
     results.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="mednav-member4-") as temp:
         temp = Path(temp)
         copy = temp / "package"
-        shutil.copytree(PACKAGE, copy)
+        shutil.copytree(package, copy)
         env = dict(os.environ)
         for key in list(env):
             if key.startswith("MEDNAV_"):
@@ -84,4 +84,7 @@ def run(mode):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("mode", choices=["baseline", "integrated"])
-    raise SystemExit(run(parser.parse_args().mode))
+    parser.add_argument("--package", type=Path, default=PACKAGE)
+    parser.add_argument("--results", type=Path)
+    args = parser.parse_args()
+    raise SystemExit(run(args.mode, args.package, args.results))

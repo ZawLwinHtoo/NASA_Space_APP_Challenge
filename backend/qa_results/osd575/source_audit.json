@@ -1,0 +1,92 @@
+{
+  "archive_sha256": "3828cf415d532f8b61547e02bdd56f4c12a250927a09a0e6bea0c8b9e13fad4c",
+  "differences": {
+    "data/generate_seed.py": "unchanged",
+    "data/nasa/OSD-575/processed/nasa_lab_results.json": "new",
+    "data/nasa/OSD-575/raw/LSDS-8_Comprehensive_Metabolic_Panel_CMP.upload_SUBMITTED.csv": "new",
+    "data/nasa/OSD-575/raw/LSDS-8_Comprehensive_Metabolic_Panel_CMP_TRANSFORMED.csv": "new",
+    "data/nasa/OSD-575/raw/OSD-575_metadata_OSD-575-ISA.zip": "new",
+    "data/scenarios/context.json": "unchanged",
+    "data/scenarios/scenarios.json": "unchanged",
+    "data/sources/provenance.json": "unchanged",
+    "data/synthetic/astronauts.csv": "unchanged",
+    "data/synthetic/baselines.json": "unchanged",
+    "data/synthetic/health_daily.csv": "unchanged",
+    "data/synthetic/inventory.csv": "unchanged",
+    "docs/demo_script.md": "unchanged",
+    "docs/evaluation.md": "unchanged",
+    "docs/evaluation_results.json": "changed",
+    "docs/HANDOFF.md": "unchanged",
+    "docs/NASA_OSD575_HANDOFF.md": "new",
+    "docs/research_sources.md": "unchanged",
+    "docs/scenario_matrix.md": "unchanged",
+    "docs/START_HERE.md": "unchanged",
+    "docs/WORK_LOG.md": "unchanged",
+    "MEDNAV_NASA_OSD575_Handoff.zip": "new",
+    "tests/member4/run_evaluation.py": "unchanged",
+    "tests/member4/test_member4.py": "unchanged"
+  },
+  "snapshot_hashes": {
+    "data/generate_seed.py": "5aafe6493b7190d73b8db9b3228e0ae2a1e3245abef4b40fa4736ebf1d31858f",
+    "data/nasa/OSD-575/processed/nasa_lab_results.json": "58f5724267d6684ec78963c7bae1b95973b8b28b37510d455158e131dd093aa6",
+    "data/nasa/OSD-575/raw/LSDS-8_Comprehensive_Metabolic_Panel_CMP.upload_SUBMITTED.csv": "dab247eb794edab59aaaa683c85fd1f2dbf4ae3684872739338e10ead4192a0c",
+    "data/nasa/OSD-575/raw/LSDS-8_Comprehensive_Metabolic_Panel_CMP_TRANSFORMED.csv": "5eb1e7f025dd8443a9e70111e62bc32afae3432753024489c5c013e401d709d9",
+    "data/nasa/OSD-575/raw/OSD-575_metadata_OSD-575-ISA.zip": "a1d3e49e2b61ab427a8760d0c98e0324a53272d0e1314632290266b014476f1d",
+    "data/scenarios/context.json": "4842542b545724ac0539a7ae4d691b4e98c296f24c5cc512d7ab6b8a72a81a3a",
+    "data/scenarios/scenarios.json": "3a88a4e0feb91e93fc853d5de899d8cba806c7853fb57c23d65bdae0c39cd425",
+    "data/sources/provenance.json": "22a03c48de2b6e78f7d5fd06553cb7c8f2f66d1c3a7c20a4968aa063c237bf39",
+    "data/synthetic/astronauts.csv": "6bc63d13138a5f563115950a513027dbcfda5dbcfa64a8db70125a0c142517f8",
+    "data/synthetic/baselines.json": "71516ee31d1bb9e5729e4491e2ba3aaa59111c033c3b0918c1922fc721ffd1b3",
+    "data/synthetic/health_daily.csv": "22f551a0fa3fc5cb24106c55f1cb4f382ae1d2582d78a31c2fd3fe36932733ce",
+    "data/synthetic/inventory.csv": "436014de277f271decba7bfd647f7968de990d0e3c90582afa55543404aeebdd",
+    "docs/demo_script.md": "3e97369c1083e61437d53f9840c90b5e6285a1874289667c7486b82792b096a4",
+    "docs/evaluation.md": "eb72614c84be9340b239f243529c2d8b4e044f5503a9348fc750b61b1fe7c80a",
+    "docs/evaluation_results.json": "a149e8623d283d8217b2f05300467404638a0e8f629cfdeb8633e13f73661bd0",
+    "docs/HANDOFF.md": "f66647732ffae33823e46a6e16c74af621577a4341e58be8c934f199c443dcd4",
+    "docs/NASA_OSD575_HANDOFF.md": "d0581f3fe99eb618348f10005b981034cfab3ba04f616255fd0298e914f72ed9",
+    "docs/research_sources.md": "eb12a6b52058fa5fa41def95d03f9632c9141d2d899e80f9038b81950e110be7",
+    "docs/scenario_matrix.md": "4b7021cf657830a594c84ded3338a00693f9e1101f99b70acfac2a46e5bee9fc",
+    "docs/START_HERE.md": "33c840b4f189cfd8eb2e94da6d30c68e2f8e49528f62b3cc11d84abfed93943f",
+    "docs/WORK_LOG.md": "772197b8d0a397fe5a71b93b3b3be836e5443ec134b6ba69a4f8c2953823cf74",
+    "MEDNAV_NASA_OSD575_Handoff.zip": "3fac8258260e6d2b1c558c4ebb071cfb71defa539f0abe0ef05ad10cb23142fc",
+    "tests/member4/run_evaluation.py": "ec8482198c255bda8af03ab4741d2c40791233bd947ecdff8db82f1d1d8db6c3",
+    "tests/member4/test_member4.py": "068b62429e9d70c961aa914eeefb4134a76b1774670824635accfee0f51cd130"
+  },
+  "validation": {
+    "samples": 28,
+    "crews": [
+      "C001",
+      "C002",
+      "C003",
+      "C004"
+    ],
+    "timepoints": [
+      "L-92",
+      "L-44",
+      "L-3",
+      "R+1",
+      "R+45",
+      "R+82",
+      "R+194"
+    ],
+    "measurement_slots": 532,
+    "numeric_values": 509,
+    "null_values": 23,
+    "transformed_slots_verified": 532,
+    "submitted_rows_verified": 531,
+    "submitted_missing": [
+      "C002_serum_R+82/bun_to_creatinine_ratio"
+    ],
+    "source_url": "https://osdr.nasa.gov/bio/repo/data/studies/OSD-575"
+  },
+  "metadata_members": [
+    "a_OSD-575_analytical-chemistry_comprehensive-metabolic-panel_quest diagnostics.txt",
+    "a_OSD-575_immunoassay_multiplex_Eve Technologies Panel HDCVD9.txt",
+    "a_OSD-575_immunoassay_multiplex_Eve Technologies Panel HD71.txt",
+    "i_Investigation.txt",
+    "a_OSD-575_immunoassay_multiplex_Alamar Biosciences.txt",
+    "s_OSD-575.txt"
+  ],
+  "metadata_corrupt_member": null,
+  "development_db_sha256": "706143f9d048b2221d118b3feb00fcde96b9895e8c86d6c1276c251bb94aa518"
+}

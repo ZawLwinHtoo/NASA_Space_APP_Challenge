@@ -1,0 +1,60 @@
+{
+  "check_in_request": {
+    "astronaut_id": "Crew A",
+    "hr": 88,
+    "sleep": 4.2,
+    "bp": "120 / 80",
+    "symptoms": [
+      "Headache",
+      "Dizziness",
+      "Fatigue"
+    ]
+  },
+  "check_in_response": {
+    "hr": 88.0,
+    "sleep": 4.2,
+    "bp": "120 / 80",
+    "symptoms": [
+      "Headache",
+      "Dizziness",
+      "Fatigue"
+    ],
+    "astronaut_id": "Crew A",
+    "id": "9d065bc2-b990-4601-a77f-7a503ac0726d",
+    "recorded_at": "2026-11-14T08:26:18.623858Z",
+    "synthetic": true,
+    "provenance": "Synthetic user-entered MVP check-in"
+  },
+  "evaluate_request": {
+    "check_in_id": "9d065bc2-b990-4601-a77f-7a503ac0726d",
+    "communication_status": "offline",
+    "emergency_override": false
+  },
+  "evaluate_response": {
+    "status": "needs_review",
+    "observations": [
+      "Reported symptoms: Headache, Dizziness, Fatigue.",
+      "resting_hr_bpm is above the recorded personal baseline.",
+      "resting_hr_bpm: current 88, personal baseline 70.",
+      "sleep_hours is below the recorded personal baseline.",
+      "sleep_hours: current 4.2, personal baseline 7.3."
+    ],
+    "missing_data": [],
+    "resource_constraints": [],
+    "safety_flags": [],
+    "next_check": {
+      "id": "symptom_review_checklist",
+      "label": "Open the symptom review form",
+      "requires_equipment": [],
+      "prototype_only": true
+    },
+    "requires_medical_officer_review": true,
+    "explanation": "Selected symptom_review_checklist (utility 3.5). contact_medical_officer (excluded): no matching evidence gap or record. measure_blood_pressure (excluded): no matching evidence gap or record. review_equipment_status (excluded): no matching evidence gap or record. review_sleep_workload (utility 2.5): sleep differs from baseline. symptom_review_checklist (utility 3.5): 3 distinct symptom entries. No diagnosis is established.",
+    "evidence_sources": [
+      "synthetic:Crew A@2026-11-14T08:26:18.623858+00:00",
+      "prototype:mednav_rules_demo-2",
+      "prototype:mednav_catalog_v2"
+    ],
+    "diagnosis": null
+  }
+}

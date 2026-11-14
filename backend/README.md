@@ -1,5 +1,9 @@
 # MEDNAV backend foundation
 
+Read-only NASA research support is documented in [integration/OSD575_HANDOFF.md](integration/OSD575_HANDOFF.md). It is separate from synthetic records and has no registered API endpoint pending contract approval.
+
+Member4 integration status, import commands, measured QA results and remaining engine/contract dependencies are documented in [integration/HANDOFF.md](integration/HANDOFF.md). The default app remains separate from the opt-in Member4 integration app.
+
 Python 3.11+, FastAPI, Pydantic 2, SQLAlchemy 2 and local SQLite. Only synthetic data; no backend clinical rules, cloud services, or outbound requests. Frontend and Member 3 files are untouched.
 
 ## Start locally (Windows PowerShell)

@@ -82,6 +82,12 @@ class InvestigationRequest(Model):
     fixture_id: str = "MN-0000"
 
 
+class EvaluationRequest(Model):
+    check_in_id: Annotated[str, Field(strict=True, min_length=1, max_length=200)]
+    communication_status: Literal["online", "offline"]
+    emergency_override: Annotated[bool, Field(strict=True)]
+
+
 class BPObservation(Model):
     bp: BloodPressure | None
 
