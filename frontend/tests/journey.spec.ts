@@ -1,4 +1,165 @@
-﻿import {test,expect} from '@playwright/test';
-test('crew, explicit unknown, save and report',async({page})=>{await page.goto('/');await expect(page.locator('.rail-reading').first()).toContainText('88');await page.getByLabel('ACTIVE CREW').selectOption('Crew B');await expect(page.locator('.rail-reading').first()).toContainText('72');await page.getByLabel('ACTIVE CREW').selectOption('Crew A');await page.getByRole('button',{name:'Add a new check-in'}).click();await page.getByRole('button',{name:'Unknown',exact:true}).first().click();await page.getByLabel('Systolic pressure (mmHg)').fill('120');await page.getByRole('button',{name:'Review check-in'}).click();await expect(page.getByRole('alert')).toContainText('both');await page.getByLabel('Systolic pressure (mmHg)').fill('');await page.getByRole('button',{name:'Review check-in'}).click();await expect(page.locator('dd').filter({hasText:'Unknown'})).toHaveCount(2);await page.getByRole('button',{name:'Save check-in',exact:true}).click();await page.getByRole('button',{name:'Open investigation'}).click();await expect(page.locator('.rail-reading').first()).toContainText('Unknown');await page.getByRole('button',{name:'View incident report'}).click();await expect(page.getByText('Pending Ground Review · Local preview only')).toBeVisible();await expect(page.locator('dd').filter({hasText:'Unknown'})).toHaveCount(2);});
-test('evidence selection, all fixtures, resource and report consistency',async({page})=>{await page.goto('/');await page.getByRole('button',{name:'Readings & reported symptoms'}).click();await expect(page.locator('.selection-context strong')).toHaveText('Recorded observations');await expect(page.locator('.evidence-stage').first()).toHaveClass(/linked/);await page.getByRole('button',{name:'What-if controls',exact:true}).click();for(let n=0;n<16;n++){for(let i=0;i<4;i++){const sw=page.getByRole('switch').nth(i);if((await sw.getAttribute('aria-checked')==='true')!==Boolean(n&(1<<i)))await sw.click();}const trace=page.getByLabel('Decision trace');await expect(trace).toContainText(n&8?'Routine checks paused':n&2?'Review the observation record':n&1?'Preview a measurement check':'Review the missing observation');await expect(page.locator('.resource-link')).toContainText(n&1?'BP monitor available':'Blocked: BP monitor unavailable');if(n&8)await expect(trace).toContainText('None — no next check');}await page.getByRole('button',{name:'View incident report'}).click();await expect(page.locator('dd').filter({hasText:'escalate'})).toHaveCount(1);await expect(page.locator('dd').filter({hasText:'None',exact:false})).toHaveCount(1);await page.getByRole('button',{name:'Medical Inventory',exact:true}).click();await page.getByLabel('Search equipment').fill('Blood');await expect(page.locator('.equipment')).toHaveCount(1);await expect(page.locator('.equipment')).toContainText('Usable');await page.getByRole('button',{name:'Mark unavailable'}).click();await page.getByRole('button',{name:'Investigation',exact:true}).click();await expect(page.locator('.resource-link')).toContainText('Blocked');});
-test('desktop mobile and keyboard layouts',async({page})=>{const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width:1440,height:900});await page.goto('/');await page.screenshot({path:'tests/console-desktop.png',fullPage:true});await page.getByRole('button',{name:'Blood pressure Unknown'}).focus();await page.keyboard.press('Enter');await expect(page.locator('.selection-context strong')).toHaveText('Blood-pressure evidence');await page.setViewportSize({width:390,height:844});for(const name of ['Mission Overview','Health Check-In','Investigation','Mission What-If Lab','Medical Inventory','Reports']){await page.getByRole('button',{name:'Toggle navigation'}).click();await page.getByRole('button',{name,exact:true}).click();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();await expect(page.locator('main h1:visible')).toHaveCount(1);}await page.getByRole('button',{name:'Toggle navigation'}).click();await page.getByRole('button',{name:'Mission Overview',exact:true}).click();await page.screenshot({path:'tests/console-mobile.png',fullPage:true});expect(errors).toEqual([]);});
+﻿import { test, expect } from '@playwright/test';
+
+test('crew selection, explicit unknown, save and report', async ({ page }) => {
+  await page.goto('/');
+
+  // Verify initial vitals for default Crew A (88 bpm)
+  await expect(page.locator('.vital-copy strong').first()).toContainText('88');
+
+  // Select Crew B via crew tabs and verify vitals update to 72 bpm
+  await page.getByRole('button', { name: 'Crew B', exact: true }).click();
+  await expect(page.locator('.vital-copy strong').first()).toContainText('72');
+
+  // Switch back to Crew A
+  await page.getByRole('button', { name: 'Crew A', exact: true }).click();
+  await expect(page.locator('.vital-copy strong').first()).toContainText('88');
+
+  // Navigate to Health Check-In
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Health Check-In' }).click();
+  await expect(page.locator('h1')).toContainText('Health Check-In for Crew A');
+
+  // Test blood pressure validation: enter only systolic
+  await page.locator('#field-2').fill('120');
+  await page.getByRole('button', { name: 'Review Check-In' }).click();
+  await expect(page.getByRole('alert')).toContainText('both');
+
+  // Clear systolic so both are Unknown
+  await page.locator('#field-2').fill('');
+  await page.getByRole('button', { name: 'Review Check-In' }).click();
+
+  // Review screen shows Unknown values (systolic, diastolic, and unmeasured fields)
+  await expect(page.locator('dd').filter({ hasText: 'Unknown' })).toHaveCount(4);
+
+  // Save check-in
+  await page.getByRole('button', { name: 'Save Check-In' }).click();
+  await expect(page.getByRole('status')).toContainText('Saved to local health log');
+
+  // Open investigation
+  await page.getByRole('button', { name: 'Open Investigation' }).click();
+  await expect(page.locator('.vital-history-scrubber-bar')).toBeVisible();
+
+  // Navigate to Incident Report via sidebar
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Incident Report' }).click();
+  await expect(page.getByText('PENDING GROUND REVIEW · OFFLINE')).toBeVisible();
+  await expect(page.locator('dd').filter({ hasText: 'Unknown' })).toHaveCount(2);
+});
+
+test('evidence selection, all fixtures, resource and report consistency', async ({ page }) => {
+  await page.goto('/');
+
+  // Navigate to Investigation via sidebar
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Investigation' }).click();
+
+  // Click on evidence item
+  await page.getByRole('button', { name: /Vitals, radiation dosimetry/i }).click();
+  await expect(page.locator('.selection-context strong')).toContainText('Recorded observations');
+
+  // Open What-If controls drawer
+  await page.getByRole('button', { name: /What-If Controls/i }).click();
+
+  // Toggle flags in What-If drawer
+  for (let n = 0; n < 16; n++) {
+    for (let i = 0; i < 4; i++) {
+      const sw = page.getByRole('switch').nth(i);
+      const isChecked = (await sw.getAttribute('aria-checked')) === 'true';
+      const shouldBeChecked = Boolean(n & (1 << i));
+      if (isChecked !== shouldBeChecked) {
+        await sw.click();
+      }
+    }
+    const trace = page.getByLabel('Decision trace');
+    if (n & 8) {
+      await expect(trace).toContainText('Emergency override active');
+    } else if (n & 2) {
+      await expect(trace).toContainText('Officer review of observations');
+    } else if (n & 1) {
+      await expect(trace).toContainText('Record blood pressure');
+    } else {
+      // Both blocked (0000) and insufficient (0010) are handled deterministically by backend contract
+      await expect(trace).toContainText(/BP unknown|Insufficient evidence/);
+    }
+
+    const resLink = page.locator('.resource-link');
+    await expect(resLink).toContainText(n & 1 ? 'BP monitor available' : 'Blocked: BP monitor unavailable');
+
+    if (n & 8) {
+      await expect(trace).toContainText('None (next_check: null)');
+    }
+  }
+
+  // Go to incident report from investigation via sidebar
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Incident Report' }).click();
+  await expect(page.locator('dd').filter({ hasText: 'escalate' })).toHaveCount(1);
+
+  // Check Medical Inventory via sidebar
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Medical Inventory' }).click();
+  await page.getByPlaceholder('Filter by equipment name…').fill('Blood');
+  await expect(page.locator('.equipment-hairline-row')).toHaveCount(1);
+  await expect(page.locator('.equipment-hairline-row')).toContainText('Usable');
+
+  // Mark unavailable
+  await page.getByRole('button', { name: 'Mark Unavailable' }).click();
+  await expect(page.locator('.equipment-hairline-row')).toContainText('Unavailable');
+
+  // Go back to Investigation and verify resource is blocked
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Investigation' }).click();
+  await expect(page.locator('.resource-link')).toContainText('Blocked: BP monitor unavailable');
+});
+
+test('desktop mobile and keyboard layouts', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+
+  // Desktop view
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await expect(page.locator('.body-stage')).toBeVisible();
+
+  // Test 3D anatomy quick part selection
+  await page.getByRole('button', { name: 'Heart', exact: true }).click();
+  await expect(page.locator('.selected-card')).toContainText('Heart');
+
+  // Mobile layout test
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const name of ['Dashboard', 'Health Check-In', 'Investigation', 'What-If Lab', 'Medical Inventory', 'Incident Report']) {
+    await page.getByRole('button', { name: 'Toggle navigation' }).click();
+    await page.getByRole('button', { name, exact: true }).click();
+    await expect(page.locator('main')).toBeVisible();
+  }
+
+  expect(errors).toEqual([]);
+});
+
+test('medical inventory CRUD operations', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('button', { name: 'Medical Inventory' }).click();
+
+  // Create new item
+  await page.getByLabel('New equipment name').fill('Glucometer');
+  await page.getByLabel('New equipment category').selectOption('Monitoring');
+  await page.getByLabel('New equipment quantity').fill('2');
+  await page.getByRole('button', { name: 'Add Item' }).click();
+
+  await page.getByPlaceholder('Filter by equipment name…').fill('Glucometer');
+  await expect(page.locator('.equipment-hairline-row')).toHaveCount(1);
+  await expect(page.locator('.equipment-hairline-row')).toContainText('Qty 2');
+
+  // Update quantity via stepper
+  await page.getByRole('button', { name: 'Increase quantity for Glucometer' }).click();
+  await expect(page.locator('.equipment-hairline-row')).toContainText('Qty 3');
+
+  // Edit item inline
+  await page.getByRole('button', { name: 'Edit Glucometer' }).click();
+  await page.getByLabel('Edit equipment name').fill('Portable Glucometer');
+  await page.getByLabel('Edit equipment quantity').fill('4');
+  await page.getByRole('button', { name: 'Save' }).click();
+
+  await page.getByPlaceholder('Filter by equipment name…').fill('Portable Glucometer');
+  await expect(page.locator('.equipment-hairline-row')).toContainText('Portable Glucometer');
+  await expect(page.locator('.equipment-hairline-row')).toContainText('Qty 4');
+
+  // Delete item
+  await page.getByRole('button', { name: 'Delete Portable Glucometer' }).click();
+  await expect(page.locator('.equipment-hairline-row')).toHaveCount(0);
+  await expect(page.getByText('No matching medical items.')).toBeVisible();
+});

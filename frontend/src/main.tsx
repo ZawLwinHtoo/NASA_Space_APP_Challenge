@@ -12,13 +12,26 @@ import {
   SlidersHorizontal,
   Package,
   FileText,
-  Info,
-  UserRound,
+  Plus,
+  Pencil,
+  Trash2,
+  Activity,
+  ScanLine,
+  Search,
+  RefreshCw,
+  Mic,
+  ShieldCheck,
 } from 'lucide-react';
 import { MissionConsole } from './components/MissionConsole';
 import { VoiceCheckIn } from './components/VoiceCheckIn';
 import { Panel, Badge } from './components/ui';
-import { crews, equipment, symptomOptions, type Crew } from './data/fixtures';
+import {
+  crews,
+  equipment,
+  symptomOptions,
+  type Crew,
+  type Equipment,
+} from './data/fixtures';
 import './styles.css';
 
 const navItems = [
@@ -109,7 +122,7 @@ function App() {
               <small>
                 Space Health Program
                 <br />
-                Synthetic Offline Demo
+                Offline Telemetry
               </small>
             </div>
           </div>
@@ -129,8 +142,6 @@ function App() {
           </button>
 
           <div className="brand-divider" aria-hidden="true" />
-          <div className="main-brand">MEDNAV</div>
-          <div className="header-separator" aria-hidden="true" />
           <div className="header-subtitle">Astronaut Health Monitoring</div>
 
           <div className="topbar-right">
@@ -149,11 +160,7 @@ function App() {
             </label>
 
             <div className="prototype-label">
-              <Info size={15} /> Synthetic Telemetry · Non-Diagnostic
-            </div>
-
-            <div className="user-icon" aria-hidden="true">
-              <UserRound size={22} />
+              Synthetic Telemetry · Non-Diagnostic
             </div>
           </div>
         </header>
@@ -196,137 +203,21 @@ function App() {
         )}
 
         {page === 4 && (
-          <div className="space-subpage">
-            <div className="asymmetric-workspace-grid">
-              <section className="left-telemetry-column">
-                <div className="wide-planetary-label left-aligned">
-                  M E D I C A L &nbsp; I N V E N T O R Y &nbsp; · &nbsp; D A Y &nbsp; 1 8 0
-                </div>
-                <h1 className="section-sans-headline">
-                  Onboard Medical Equipment
-                </h1>
-                <p className="telemetry-summary-copy">
-                  Verify and toggle usable status for onboard medical devices and
-                  consumables. Unavailable equipment is automatically excluded
-                  from recommended next checks.
-                </p>
-
-                <div className="inventory-toolbar">
-                  <div
-                    className="preset-hairline-row"
-                    role="group"
-                    aria-label="Filter by category"
-                  >
-                    {[
-                      'All',
-                      'Monitoring',
-                      'Documentation',
-                      'Imaging',
-                      'Supplies',
-                    ].map((c) => (
-                      <button
-                        key={c}
-                        type="button"
-                        className={`hairline-pill-btn ${
-                          category === c ? 'active' : ''
-                        }`}
-                        onClick={() => setCategory(c)}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="filters">
-                    <label>
-                      Search equipment
-                      <input
-                        placeholder="Filter by equipment name…"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                      />
-                    </label>
-                    <Badge>
-                      {inventory.filter((e) => e.available).length} /{' '}
-                      {inventory.length} USABLE
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="hairline-telemetry-list">
-                  {inventory
-                    .filter(
-                      (e) =>
-                        e.name.toLowerCase().includes(search.toLowerCase()) &&
-                        (category === 'All' || e.category === category)
-                    )
-                    .map((e) => (
-                      <article
-                        className="equipment-hairline-row"
-                        key={e.name}
-                      >
-                        <div className="equip-row-left">
-                          <strong>{e.name}</strong>
-                          <span>
-                            {e.category} · Quantity {e.quantity} ·{' '}
-                            <em className={e.available ? 'ok-txt' : 'unknown-val'}>
-                              {e.available ? 'Usable' : 'Unavailable'}
-                            </em>
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          className="hairline-pill-btn"
-                          onClick={() => {
-                            setInventory((v) =>
-                              v.map((x) =>
-                                x.name === e.name
-                                  ? { ...x, available: !x.available }
-                                  : x
-                              )
-                            );
-                            if (e.name === 'Blood-pressure monitor') {
-                              setFlags((f) => [!e.available, f[1], f[2], f[3]]);
-                            }
-                          }}
-                        >
-                          Mark {e.available ? 'Unavailable' : 'Usable'}
-                        </button>
-                      </article>
-                    ))}
-                </div>
-              </section>
-
-              <aside className="right-frosted-sheet">
-                <div className="wide-planetary-label left-aligned">
-                  E Q U I P M E N T &nbsp; R E A D I N E S S
-                </div>
-                <dl className="hairline-telemetry-list compact-list">
-                  <div className="telemetry-kv-row compact">
-                    <dt>Tracked Medical Items:</dt>
-                    <dd>{inventory.length} Items</dd>
-                  </div>
-                  <div className="telemetry-kv-row compact">
-                    <dt>Currently Usable:</dt>
-                    <dd>
-                      {inventory.filter((e) => e.available).length} Available
-                    </dd>
-                  </div>
-                  <div className="telemetry-kv-row compact">
-                    <dt>Blood-Pressure Monitor:</dt>
-                    <dd className={!flags[0] ? 'unknown-val' : ''}>
-                      {flags[0] ? 'Available' : 'Unavailable'}
-                    </dd>
-                  </div>
-                </dl>
-              </aside>
-            </div>
-          </div>
+          <MedicalInventory
+            inventory={inventory}
+            setInventory={setInventory}
+            flags={flags}
+            setFlags={setFlags}
+            search={search}
+            setSearch={setSearch}
+            category={category}
+            setCategory={setCategory}
+          />
         )}
 
         <footer>
           <span>MEDNAV · ASTRONAUT HEALTH MONITORING</span>
-          <span>SYNTHETIC DATA · OFFLINE MODE</span>
+          <span>SYNTHETIC TELEMETRY · OFFLINE</span>
         </footer>
         </main>
       </div>
@@ -376,6 +267,43 @@ function CheckIn({
   const [review, setReview] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [syncedNotice, setSyncedNotice] = useState(false);
+
+  const syncSensors = () => {
+    setHr(crew.hr !== null ? String(crew.hr) : String(crew.baseline));
+    setSleep(
+      crew.sleep !== null ? String(crew.sleep) : String(crew.sleepBaseline)
+    );
+    setRad(
+      crew.radiationDailyMsv !== null
+        ? String(crew.radiationDailyMsv)
+        : String(crew.radiationBaselineMsv)
+    );
+    setAred(
+      crew.countermeasureMin !== null
+        ? String(crew.countermeasureMin)
+        : String(crew.countermeasureTargetMin)
+    );
+    setMass(
+      crew.bodyMassKg !== null
+        ? String(crew.bodyMassKg)
+        : String(crew.baselineMassKg)
+    );
+    setSyncedNotice(true);
+  };
+
+  const stepValue = (
+    val: string,
+    setter: (v: string) => void,
+    delta: number,
+    min = 0,
+    decimals = 0
+  ) => {
+    const base = val === '' ? 0 : Number(val);
+    const next = Math.max(min, Number((base + delta).toFixed(decimals)));
+    setter(String(next));
+  };
 
   const draft: Crew = {
     ...crew,
@@ -449,40 +377,83 @@ function CheckIn({
                 setReview(true);
               }}
             >
-              <VoiceCheckIn
-                onApply={(parsed) => {
-                  if (parsed.clearSymptoms) {
+              {/* Confirm-First Quick-Action Bar */}
+              <div className="checkin-quick-bar">
+                <button
+                  type="button"
+                  className="quick-nominal-btn"
+                  onClick={() => {
                     setSymptoms([]);
-                  } else if (parsed.symptoms && parsed.symptoms.length > 0) {
-                    setSymptoms(parsed.symptoms);
-                  }
-                  if (parsed.hr !== undefined && parsed.hr !== null) {
-                    setHr(parsed.hr);
-                  }
-                  if (parsed.sleep !== undefined && parsed.sleep !== null) {
-                    setSleep(parsed.sleep);
-                  }
-                  if (parsed.sys !== undefined && parsed.sys !== null) {
-                    setSys(parsed.sys);
-                  }
-                  if (parsed.dia !== undefined && parsed.dia !== null) {
-                    setDia(parsed.dia);
-                  }
-                }}
-              />
+                    setError('');
+                    if (Boolean(sys) !== Boolean(dia)) {
+                      setSys('');
+                      setDia('');
+                    }
+                    setReview(true);
+                  }}
+                >
+                  <ShieldCheck size={16} />
+                  <span>All Nominal · No Symptoms</span>
+                </button>
+
+                <button
+                  type="button"
+                  className="hairline-pill-btn"
+                  onClick={syncSensors}
+                >
+                  <RefreshCw size={14} />
+                  <span>
+                    {syncedNotice ? 'Sensors Synced' : 'Sync Station Sensors'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`hairline-pill-btn ${voiceOpen ? 'active' : ''}`}
+                  aria-expanded={voiceOpen}
+                  onClick={() => setVoiceOpen((v) => !v)}
+                >
+                  <Mic size={14} />
+                  <span>{voiceOpen ? 'Hide Voice' : 'Hands-Free Voice'}</span>
+                </button>
+              </div>
+
+              {voiceOpen && (
+                <VoiceCheckIn
+                  onApply={(parsed) => {
+                    if (parsed.clearSymptoms) {
+                      setSymptoms([]);
+                    } else if (parsed.symptoms && parsed.symptoms.length > 0) {
+                      setSymptoms(parsed.symptoms);
+                    }
+                    if (parsed.hr !== undefined && parsed.hr !== null) {
+                      setHr(parsed.hr);
+                    }
+                    if (parsed.sleep !== undefined && parsed.sleep !== null) {
+                      setSleep(parsed.sleep);
+                    }
+                    if (parsed.sys !== undefined && parsed.sys !== null) {
+                      setSys(parsed.sys);
+                    }
+                    if (parsed.dia !== undefined && parsed.dia !== null) {
+                      setDia(parsed.dia);
+                    }
+                  }}
+                />
+              )}
 
               <fieldset>
                 <div className="fieldset-header">
-                  <legend>Reported Symptoms</legend>
-                  {symptoms.length > 0 && (
-                    <button
-                      type="button"
-                      className="hairline-pill-btn"
-                      onClick={() => setSymptoms([])}
-                    >
-                      <RotateCcw size={13} /> Clear
-                    </button>
-                  )}
+                  <legend>1 · Symptoms (Tap to Toggle)</legend>
+                  <button
+                    type="button"
+                    className={`hairline-pill-btn ${
+                      symptoms.length === 0 ? 'active' : ''
+                    }`}
+                    onClick={() => setSymptoms([])}
+                  >
+                    None Reported
+                  </button>
                 </div>
                 <div className="symptom-options">
                   {symptomOptions.map((s) => (
@@ -505,59 +476,178 @@ function CheckIn({
               </fieldset>
 
               <div className="vitals-section-head">
-                <strong>Vital Signs, Space Radiation &amp; Microgravity</strong>
-                <span>Unavailable measurements remain Unknown</span>
+                <strong>2 · Sensor Telemetry &amp; Manual Measurements</strong>
+                <span>Confirm synced values or mark Unknown</span>
               </div>
 
               <div className="form-grid">
                 {[
-                  ['Heart rate (bpm)', hr, setHr],
-                  ['Sleep (hours)', sleep, setSleep],
-                  ['Systolic (mmHg)', sys, setSys],
-                  ['Diastolic (mmHg)', dia, setDia],
-                  ['Space radiation (mSv/day)', rad, setRad],
-                  ['Microgravity exercise ARED (min)', ared, setAred],
-                  ['Body mass SLAMMD (kg)', mass, setMass],
-                ].map(([label, v, change], i) => {
-                  const isUnknown = (v as string) === '';
+                  {
+                    id: 0,
+                    label: 'Heart rate (bpm)',
+                    val: hr,
+                    set: setHr,
+                    step: 1,
+                    min: 1,
+                    decimals: 0,
+                    source: 'WEARABLE',
+                  },
+                  {
+                    id: 1,
+                    label: 'Sleep (hours)',
+                    val: sleep,
+                    set: setSleep,
+                    step: 0.5,
+                    min: 0,
+                    decimals: 1,
+                    source: 'WEARABLE',
+                  },
+                  {
+                    id: 4,
+                    label: 'Space radiation (mSv/day)',
+                    val: rad,
+                    set: setRad,
+                    step: 0.05,
+                    min: 0.01,
+                    decimals: 2,
+                    source: 'DOSIMETER',
+                  },
+                  {
+                    id: 5,
+                    label: 'ARED exercise (min)',
+                    val: ared,
+                    set: setAred,
+                    step: 10,
+                    min: 0,
+                    decimals: 0,
+                    source: 'STATION',
+                  },
+                  {
+                    id: 6,
+                    label: 'Body mass SLAMMD (kg)',
+                    val: mass,
+                    set: setMass,
+                    step: 0.2,
+                    min: 1,
+                    decimals: 1,
+                    source: 'STATION',
+                  },
+                ].map((f) => {
+                  const isUnknown = f.val === '';
                   return (
                     <div
                       className={`field-card ${isUnknown ? 'is-unknown' : ''}`}
-                      key={label as string}
+                      key={f.label}
                     >
                       <div className="field-card-head">
-                        <label htmlFor={`field-${i}`}>{label as string}</label>
+                        <label htmlFor={`field-${f.id}`}>{f.label}</label>
+                        <div className="field-badge-group">
+                          <span
+                            className={`source-chip ${
+                              isUnknown ? 'unknown' : 'sensor'
+                            }`}
+                          >
+                            {isUnknown ? 'UNKNOWN' : f.source}
+                          </span>
+                          <button
+                            type="button"
+                            className="unknown-option"
+                            aria-pressed={isUnknown}
+                            onClick={() => f.set('')}
+                          >
+                            Unknown
+                          </button>
+                        </div>
+                      </div>
+                      <div className="field-stepper-input">
                         <button
                           type="button"
-                          className="unknown-option"
-                          aria-pressed={isUnknown}
-                          onClick={() => {
-                            if (i === 2 || i === 3) {
-                              setSys('');
-                              setDia('');
-                            } else {
-                              (change as (v: string) => void)('');
-                            }
-                          }}
+                          className="field-step-btn"
+                          aria-label={`Decrease ${f.label}`}
+                          onClick={() =>
+                            stepValue(f.val, f.set, -f.step, f.min, f.decimals)
+                          }
                         >
-                          Unknown
+                          -
+                        </button>
+                        <input
+                          id={`field-${f.id}`}
+                          type="number"
+                          min={f.min}
+                          max={f.id === 1 ? 24 : undefined}
+                          step="any"
+                          value={f.val}
+                          placeholder="Unknown"
+                          onChange={(e) => f.set(e.target.value)}
+                        />
+                        <button
+                          type="button"
+                          className="field-step-btn"
+                          aria-label={`Increase ${f.label}`}
+                          onClick={() =>
+                            stepValue(f.val, f.set, f.step, f.min, f.decimals)
+                          }
+                        >
+                          +
                         </button>
                       </div>
-                      <input
-                        id={`field-${i}`}
-                        type="number"
-                        min={i === 1 || i === 5 ? 0 : 0.01}
-                        max={i === 1 ? 24 : undefined}
-                        step="any"
-                        value={v as string}
-                        placeholder="Unknown"
-                        onChange={(e) =>
-                          (change as (v: string) => void)(e.target.value)
-                        }
-                      />
                     </div>
                   );
                 })}
+
+                {/* Manual Blood Pressure Pair Card */}
+                <div
+                  className={`field-card bp-pair-card ${
+                    !sys && !dia ? 'is-unknown' : ''
+                  }`}
+                >
+                  <div className="field-card-head">
+                    <label htmlFor="field-2">Blood pressure (mmHg)</label>
+                    <div className="field-badge-group">
+                      <span
+                        className={`source-chip ${
+                          !sys && !dia ? 'unknown' : 'sensor'
+                        }`}
+                      >
+                        {!sys && !dia ? 'UNKNOWN' : 'MANUAL'}
+                      </span>
+                      <button
+                        type="button"
+                        className="unknown-option"
+                        aria-pressed={!sys && !dia}
+                        onClick={() => {
+                          setSys('');
+                          setDia('');
+                        }}
+                      >
+                        Unknown
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bp-dual-inputs">
+                    <input
+                      id="field-2"
+                      type="number"
+                      min={1}
+                      step="any"
+                      value={sys}
+                      placeholder="Systolic"
+                      aria-label="Systolic (mmHg)"
+                      onChange={(e) => setSys(e.target.value)}
+                    />
+                    <span className="bp-slash">/</span>
+                    <input
+                      id="field-3"
+                      type="number"
+                      min={1}
+                      step="any"
+                      value={dia}
+                      placeholder="Diastolic"
+                      aria-label="Diastolic (mmHg)"
+                      onChange={(e) => setDia(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
 
               {error && (
@@ -584,9 +674,505 @@ function CheckIn({
           <Observation crew={draft} />
           <div className="sheet-divider" />
           <p className="sheet-footnote">
-            Missing measurements are preserved explicitly as <b>Unknown</b> and
-            never assumed normal.
+            Missing values remain <b>Unknown</b> and are never assumed normal.
           </p>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+const inventoryCategories = [
+  'Monitoring',
+  'Documentation',
+  'Imaging',
+  'Supplies',
+];
+
+function CategoryIcon({ category }: { category: string }) {
+  if (category === 'Monitoring') return <Activity size={16} />;
+  if (category === 'Documentation') return <FileText size={16} />;
+  if (category === 'Imaging') return <ScanLine size={16} />;
+  return <Package size={16} />;
+}
+
+function MedicalInventory({
+  inventory,
+  setInventory,
+  flags,
+  setFlags,
+  search,
+  setSearch,
+  category,
+  setCategory,
+}: {
+  inventory: Equipment[];
+  setInventory: React.Dispatch<React.SetStateAction<Equipment[]>>;
+  flags: boolean[];
+  setFlags: React.Dispatch<React.SetStateAction<boolean[]>>;
+  search: string;
+  setSearch: (s: string) => void;
+  category: string;
+  setCategory: (c: string) => void;
+}) {
+  const [statusFilter, setStatusFilter] = useState<'all' | 'usable' | 'unavailable'>('all');
+  const [newName, setNewName] = useState('');
+  const [newCategory, setNewCategory] = useState('Monitoring');
+  const [newQty, setNewQty] = useState('1');
+  const [newAvailable, setNewAvailable] = useState(true);
+  const [formError, setFormError] = useState('');
+
+  const [editingName, setEditingName] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editCategory, setEditCategory] = useState('Monitoring');
+  const [editQty, setEditQty] = useState('1');
+  const [editAvailable, setEditAvailable] = useState(true);
+  const [editError, setEditError] = useState('');
+
+  const syncBpFlag = (nextInventory: Equipment[]) => {
+    const bpMonitor = nextInventory.find(
+      (item) => item.name === 'Blood-pressure monitor'
+    );
+    setFlags((f) => [bpMonitor ? bpMonitor.available : false, f[1], f[2], f[3]]);
+  };
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      setFormError('Enter an item name.');
+      return;
+    }
+    if (
+      inventory.some((item) => item.name.toLowerCase() === trimmed.toLowerCase())
+    ) {
+      setFormError('Item already exists.');
+      return;
+    }
+    const qty = Math.max(0, Number(newQty) || 0);
+    const next = [
+      ...inventory,
+      { name: trimmed, category: newCategory, quantity: qty, available: newAvailable },
+    ];
+    setInventory(next);
+    syncBpFlag(next);
+    setNewName('');
+    setNewQty('1');
+    setNewAvailable(true);
+    setFormError('');
+  };
+
+  const startEdit = (item: Equipment) => {
+    setEditingName(item.name);
+    setEditName(item.name);
+    setEditCategory(item.category);
+    setEditQty(String(item.quantity));
+    setEditAvailable(item.available);
+    setEditError('');
+  };
+
+  const handleSaveEdit = (originalName: string) => {
+    const trimmed = editName.trim();
+    if (!trimmed) {
+      setEditError('Name is required.');
+      return;
+    }
+    if (
+      trimmed.toLowerCase() !== originalName.toLowerCase() &&
+      inventory.some((item) => item.name.toLowerCase() === trimmed.toLowerCase())
+    ) {
+      setEditError('Item name already exists.');
+      return;
+    }
+    const qty = Math.max(0, Number(editQty) || 0);
+    const next = inventory.map((item) =>
+      item.name === originalName
+        ? {
+            name: trimmed,
+            category: editCategory,
+            quantity: qty,
+            available: editAvailable,
+          }
+        : item
+    );
+    setInventory(next);
+    syncBpFlag(next);
+    setEditingName(null);
+    setEditError('');
+  };
+
+  const handleDelete = (name: string) => {
+    const next = inventory.filter((item) => item.name !== name);
+    setInventory(next);
+    syncBpFlag(next);
+    if (editingName === name) setEditingName(null);
+  };
+
+  const adjustQuantity = (name: string, delta: number) => {
+    const next = inventory.map((item) =>
+      item.name === name
+        ? { ...item, quantity: Math.max(0, item.quantity + delta) }
+        : item
+    );
+    setInventory(next);
+  };
+
+  const usableCount = inventory.filter((e) => e.available).length;
+  const readinessPct = inventory.length
+    ? Math.round((usableCount / inventory.length) * 100)
+    : 0;
+
+  const filtered = inventory.filter((e) => {
+    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase());
+    const matchesCat = category === 'All' || e.category === category;
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'usable' ? e.available : !e.available);
+    return matchesSearch && matchesCat && matchesStatus;
+  });
+
+  return (
+    <div className="space-subpage">
+      <div className="asymmetric-workspace-grid">
+        <section className="left-telemetry-column">
+          <div className="wide-planetary-label left-aligned">
+            M E D I C A L &nbsp; I N V E N T O R Y &nbsp; · &nbsp; D A Y &nbsp; 1 8 0
+          </div>
+          <h1 className="section-sans-headline">Onboard Medical Equipment</h1>
+          <p className="telemetry-summary-copy">
+            Manage onboard devices and consumables. Unavailable items are
+            excluded from check routing.
+          </p>
+
+          <div className="inventory-toolbar">
+            <div className="inventory-filter-top">
+              <div
+                className="preset-hairline-row"
+                role="group"
+                aria-label="Filter by category"
+              >
+                {['All', ...inventoryCategories].map((c) => {
+                  const count =
+                    c === 'All'
+                      ? inventory.length
+                      : inventory.filter((item) => item.category === c).length;
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`hairline-pill-btn ${
+                        category === c ? 'active' : ''
+                      }`}
+                      onClick={() => setCategory(c)}
+                    >
+                      {c} <span className="pill-count">{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div
+                className="status-segment-row"
+                role="group"
+                aria-label="Filter by availability"
+              >
+                {(
+                  [
+                    ['all', 'All'],
+                    ['usable', 'Usable'],
+                    ['unavailable', 'Unavailable'],
+                  ] as const
+                ).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={`status-seg-btn ${
+                      statusFilter === key ? 'active' : ''
+                    }`}
+                    onClick={() => setStatusFilter(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="filters">
+              <label className="search-input-wrap">
+                <Search size={15} className="search-icon" aria-hidden="true" />
+                <input
+                  aria-label="Search equipment"
+                  placeholder="Filter by equipment name…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </label>
+              <Badge>
+                {usableCount} / {inventory.length} USABLE
+              </Badge>
+            </div>
+          </div>
+
+          <div className="equipment-grid">
+            {filtered.length === 0 ? (
+              <p className="inventory-empty">No matching medical items.</p>
+            ) : (
+              filtered.map((e) =>
+                editingName === e.name ? (
+                  <div
+                    className="equipment-hairline-row editing"
+                    key={e.name}
+                  >
+                    <div className="equip-card-head">
+                      <span className="micro-label">EDIT EQUIPMENT</span>
+                    </div>
+                    <div className="equip-edit-grid">
+                      <label className="edit-field-label">
+                        <span>Name</span>
+                        <input
+                          aria-label="Edit equipment name"
+                          value={editName}
+                          onChange={(ev) => setEditName(ev.target.value)}
+                        />
+                      </label>
+                      <label className="edit-field-label">
+                        <span>Category</span>
+                        <select
+                          aria-label="Edit equipment category"
+                          value={editCategory}
+                          onChange={(ev) => setEditCategory(ev.target.value)}
+                        >
+                          {inventoryCategories.map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label className="edit-field-label">
+                        <span>Qty</span>
+                        <input
+                          aria-label="Edit equipment quantity"
+                          type="number"
+                          min={0}
+                          value={editQty}
+                          onChange={(ev) => setEditQty(ev.target.value)}
+                        />
+                      </label>
+                    </div>
+                    <label className="equip-check-inline">
+                      <input
+                        type="checkbox"
+                        checked={editAvailable}
+                        onChange={(ev) => setEditAvailable(ev.target.checked)}
+                      />
+                      <span>Usable on station</span>
+                    </label>
+                    {editError && (
+                      <p role="alert" className="error">
+                        {editError}
+                      </p>
+                    )}
+                    <div className="equip-card-footer">
+                      <button
+                        type="button"
+                        className="hairline-pill-btn active"
+                        onClick={() => handleSaveEdit(e.name)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        className="hairline-pill-btn"
+                        onClick={() => setEditingName(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <article
+                    className={`equipment-hairline-row ${
+                      e.available ? 'is-usable' : 'is-unavailable'
+                    }`}
+                    key={e.name}
+                  >
+                    <div className="equip-card-meta">
+                      <span className="equip-cat-chip">
+                        <CategoryIcon category={e.category} />
+                        <span>{e.category}</span>
+                      </span>
+                      <span
+                        className={`equip-status-pill ${
+                          e.available ? 'usable' : 'unavailable'
+                        }`}
+                      >
+                        {e.available ? 'Usable' : 'Unavailable'}
+                      </span>
+                    </div>
+
+                    <strong className="equip-card-title">{e.name}</strong>
+
+                    <div className="equip-card-footer">
+                      <div
+                        className="qty-stepper"
+                        aria-label={`Quantity controls for ${e.name}`}
+                      >
+                        <button
+                          type="button"
+                          className="icon-step-btn"
+                          aria-label={`Decrease quantity for ${e.name}`}
+                          disabled={e.quantity <= 0}
+                          onClick={() => adjustQuantity(e.name, -1)}
+                        >
+                          -
+                        </button>
+                        <span className="qty-readout">Qty {e.quantity}</span>
+                        <button
+                          type="button"
+                          className="icon-step-btn"
+                          aria-label={`Increase quantity for ${e.name}`}
+                          onClick={() => adjustQuantity(e.name, 1)}
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <div className="equip-row-actions">
+                        <button
+                          type="button"
+                          className="equip-action-btn"
+                          onClick={() => {
+                            const next = inventory.map((x) =>
+                              x.name === e.name
+                                ? { ...x, available: !x.available }
+                                : x
+                            );
+                            setInventory(next);
+                            syncBpFlag(next);
+                          }}
+                        >
+                          Mark {e.available ? 'Unavailable' : 'Usable'}
+                        </button>
+                        <button
+                          type="button"
+                          className="equip-icon-btn"
+                          aria-label={`Edit ${e.name}`}
+                          onClick={() => startEdit(e)}
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          className="equip-icon-btn danger-btn"
+                          aria-label={`Delete ${e.name}`}
+                          onClick={() => handleDelete(e.name)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                )
+              )
+            )}
+          </div>
+        </section>
+
+        <aside className="right-frosted-sheet">
+          <div className="wide-planetary-label left-aligned">
+            E Q U I P M E N T &nbsp; R E A D I N E S S
+          </div>
+
+          <div className="readiness-meter-block">
+            <div className="readiness-meter-head">
+              <span>Station Readiness</span>
+              <strong>{readinessPct}%</strong>
+            </div>
+            <div className="readiness-meter-track" aria-hidden="true">
+              <div
+                className="readiness-meter-fill"
+                style={{ width: `${readinessPct}%` }}
+              />
+            </div>
+          </div>
+
+          <dl className="hairline-telemetry-list compact-list">
+            <div className="telemetry-kv-row compact">
+              <dt>Tracked Medical Items:</dt>
+              <dd>{inventory.length} Items</dd>
+            </div>
+            <div className="telemetry-kv-row compact">
+              <dt>Currently Usable:</dt>
+              <dd>{usableCount} Available</dd>
+            </div>
+            <div className="telemetry-kv-row compact">
+              <dt>Blood-Pressure Monitor:</dt>
+              <dd className={!flags[0] ? 'unknown-val' : ''}>
+                {flags[0] ? 'Available' : 'Unavailable'}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="sheet-divider" />
+
+          <div className="wide-planetary-label left-aligned">
+            A D D &nbsp; M E D I C A L &nbsp; I T E M
+          </div>
+          <form className="inventory-add-form" onSubmit={handleAdd}>
+            <label>
+              Item Name
+              <input
+                aria-label="New equipment name"
+                placeholder="e.g. Glucometer"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </label>
+            <div className="inventory-add-row">
+              <label>
+                Category
+                <select
+                  aria-label="New equipment category"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                >
+                  {inventoryCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Quantity
+                <input
+                  aria-label="New equipment quantity"
+                  type="number"
+                  min={0}
+                  value={newQty}
+                  onChange={(e) => setNewQty(e.target.value)}
+                />
+              </label>
+            </div>
+            <label className="equip-check-inline">
+              <input
+                type="checkbox"
+                checked={newAvailable}
+                onChange={(e) => setNewAvailable(e.target.checked)}
+              />
+              <span>Usable on station</span>
+            </label>
+            {formError && (
+              <p role="alert" className="error">
+                {formError}
+              </p>
+            )}
+            <button type="submit" className="ghost-rect-cta full-width">
+              <Plus size={16} />
+              <span>Add Item</span>
+            </button>
+          </form>
         </aside>
       </div>
     </div>

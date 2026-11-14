@@ -63,23 +63,23 @@ const labels = [
 
 const evidence = {
   readings: {
-    title: 'Recorded vital & environmental observations',
-    text: 'Heart rate, sleep, radiation dosimetry, and microgravity countermeasure load compared against personal baseline.',
+    title: 'Recorded observations',
+    text: 'HR, sleep, radiation, and exercise vs. baseline.',
     links: ['known', 'next'],
   },
   bp: {
-    title: 'Missing measurements (BP & Ocular)',
-    text: 'Unmeasured blood pressure, radiation, or microgravity ocular checks remain explicitly Unknown and are tracked separately from equipment state.',
+    title: 'Missing measurements',
+    text: 'Unmeasured values stay Unknown.',
     links: ['unknown', 'resource', 'next'],
   },
   resources: {
-    title: 'Onboard equipment dependency',
-    text: 'Unavailable equipment (such as BP monitor or Ultrasound unit) blocks only checks that require it.',
+    title: 'Equipment dependency',
+    text: 'Unavailable equipment blocks dependent checks only.',
     links: ['resource', 'next'],
   },
   next: {
-    title: 'Next step selection',
-    text: 'Selected deterministically from verified mission checklists.',
+    title: 'Next check',
+    text: 'Selected from approved checklists.',
     links: ['known', 'unknown', 'resource', 'next'],
   },
 };
@@ -316,93 +316,64 @@ export function MissionConsole({
           aria-label="Crew health status dashboard"
         >
           <div className="dashboard-header-bar">
-            <div>
+            <div className="dash-title-group">
               <div className="wide-planetary-label left-aligned">
-                L I V E &nbsp; H E A L T H &nbsp; D A S H B O A R D &nbsp; · &nbsp; 3 D &nbsp; T E L E M E T R Y
+                C R E W &nbsp; H E A L T H &nbsp; · &nbsp; D A Y &nbsp; 1 8 0
               </div>
               <h1 className="section-sans-headline">
-                {crew.id} Status Overview · {crew.role}
+                {crew.id} · {crew.role}
               </h1>
             </div>
 
-            <div className="dashboard-header-actions">
-              <button
-                type="button"
-                className="hairline-pill-btn"
-                onClick={() => go(1)}
+            <div className="dash-workflow-controls">
+              <div
+                className="crew-tabs"
+                role="region"
+                aria-label="Select active crew member"
               >
-                + Log Check-In
-              </button>
-              <button
-                type="button"
-                className="hairline-pill-btn"
-                onClick={() => go(3)}
-              >
-                What-If Simulator
-              </button>
-              <button
-                type="button"
-                className="hairline-pill-btn"
-                onClick={() => go(5)}
-              >
-                Incident Report
-              </button>
+                {profiles.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`crew-tab ${c.id === crew.id ? 'active' : ''}`}
+                    onClick={() => onSelectCrew(c.id)}
+                    aria-pressed={c.id === crew.id}
+                  >
+                    {c.id}
+                  </button>
+                ))}
+              </div>
+
+              <div className="dashboard-header-actions">
+                <button
+                  type="button"
+                  className="hairline-pill-btn"
+                  onClick={() => go(1)}
+                >
+                  Health Check-In
+                </button>
+                <button
+                  type="button"
+                  className="hairline-pill-btn active"
+                  onClick={() => go(2)}
+                >
+                  Investigate <ArrowUpRight size={14} />
+                </button>
+              </div>
             </div>
           </div>
 
           <div className="mednav-3d-dashboard-grid">
-            {/* LEFT STACK: CREW PICKER, PROFILE, VITAL WAVEFORMS, RADIATION/μG & SYMPTOMS */}
+            {/* LEFT STACK: VITALS & SYMPTOMS */}
             <div className="left-stack">
-              <div
-                className="crew-picker"
-                role="region"
-                aria-label="Select active crew member"
-              >
-                <div className="crew-picker-label">
-                  <UserRound size={18} /> Astronaut
-                </div>
-                <div className="crew-tabs">
-                  {profiles.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className={`crew-tab ${c.id === crew.id ? 'active' : ''}`}
-                      onClick={() => onSelectCrew(c.id)}
-                      aria-pressed={c.id === crew.id}
-                    >
-                      {c.id}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <article className="command-card crew-card">
-                <div className="profile-pic">
-                  <AstronautBadge />
-                </div>
-                <div className="profile-details">
-                  <h2>{crew.id}</h2>
-                  <div>
-                    Role: <span>{crew.role}</span>
-                  </div>
-                  <div>
-                    Mission: <span>Day 180 · Orbital Health</span>
-                  </div>
-                </div>
-                <span className={`kpi-status-pill ${view.statusTone}`}>
-                  {view.status === 'escalate' ? 'ESCALATE' : 'SYNTHETIC'}
-                </span>
-              </article>
-
               <article className="command-card vitals-card">
                 <header className="command-card-header">
                   <div className="command-card-title">
                     <HeartPulse size={18} />
-                    <span>Vital Signs</span>
+                    <span>Vitals &amp; Telemetry</span>
                   </div>
                   <span className="realtime-tag">
-                    <span className="tiny-dot ok" aria-hidden="true" />
-                    {knownVitalsCount}/3 Recorded
+                    {knownVitalsCount}/3 Vitals
                   </span>
                 </header>
 
@@ -412,14 +383,13 @@ export function MissionConsole({
                     className="vital-row rail-reading"
                     onClick={() => focusPart('heart', 'organs')}
                   >
-                    <HeartPulse className="vital-icon coral-txt" size={22} />
+                    <HeartPulse className="vital-icon coral-txt" size={20} />
                     <div className="vital-copy">
                       <small>Heart Rate</small>
                       <strong className={crew.hr === null ? 'unknown-val' : ''}>
                         {crew.hr ?? 'Unknown'}
                         {crew.hr !== null && <sub> bpm</sub>}
                       </strong>
-                      <em>Base {crew.baseline} bpm</em>
                     </div>
                     <MiniWave
                       tone={crew.hr === null ? 'amber' : 'coral'}
@@ -433,14 +403,13 @@ export function MissionConsole({
                     className="vital-row rail-reading"
                     onClick={() => focusPart('heart', 'organs')}
                   >
-                    <Stethoscope className="vital-icon ok-txt" size={22} />
+                    <Stethoscope className="vital-icon ok-txt" size={20} />
                     <div className="vital-copy">
                       <small>Blood Pressure</small>
                       <strong className={!bp ? 'unknown-val bp-number' : 'bp-number'}>
                         {bp ?? 'Unknown'}
                         {bp && <sub> mmHg</sub>}
                       </strong>
-                      <em>Monitor: {monitor ? 'Available' : 'Unavailable'}</em>
                     </div>
                     <MiniWave tone={!bp ? 'amber' : 'cobalt'} seed={7} />
                   </button>
@@ -450,38 +419,25 @@ export function MissionConsole({
                     className="vital-row rail-reading"
                     onClick={() => focusPart('brain', 'organs')}
                   >
-                    <Moon className="vital-icon ok-txt" size={22} />
+                    <Moon className="vital-icon ok-txt" size={20} />
                     <div className="vital-copy">
-                      <small>Sleep Duration</small>
+                      <small>Sleep</small>
                       <strong className={crew.sleep === null ? 'unknown-val' : ''}>
                         {crew.sleep ?? 'Unknown'}
                         {crew.sleep !== null && <sub> h</sub>}
                       </strong>
-                      <em>Base {crew.sleepBaseline} h</em>
                     </div>
                     <SleepBars />
                   </button>
-                </div>
-              </article>
 
-              <article className="command-card hazards-card">
-                <header className="command-card-header">
-                  <div className="command-card-title">
-                    <Radiation size={18} />
-                    <span>Space Radiation &amp; μG</span>
-                  </div>
-                  <span className="realtime-tag">Synthetic</span>
-                </header>
-
-                <div className="hazard-compact-list">
                   <button
                     type="button"
                     className="hazard-row-btn"
                     onClick={() => focusPart('skin', 'surface')}
                   >
-                    <Radiation size={17} className="amber-text" />
+                    <Radiation size={16} className="amber-text" />
                     <div className="hazard-row-copy">
-                      <small>Space Radiation Dosimetry</small>
+                      <small>Radiation</small>
                       <strong
                         className={
                           crew.radiationDailyMsv === null ? 'unknown-val' : ''
@@ -492,12 +448,6 @@ export function MissionConsole({
                           : 'Unknown'}
                       </strong>
                     </div>
-                    <span className="hazard-row-meta">
-                      180d:{' '}
-                      {crew.radiationCumulativeMsv !== null
-                        ? `${crew.radiationCumulativeMsv} mSv`
-                        : 'Unknown'}
-                    </span>
                   </button>
 
                   <button
@@ -505,9 +455,9 @@ export function MissionConsole({
                     className="hazard-row-btn"
                     onClick={() => focusPart('femur_l', 'skeleton')}
                   >
-                    <Dumbbell size={17} className="ok-txt" />
+                    <Dumbbell size={16} className="ok-txt" />
                     <div className="hazard-row-copy">
-                      <small>μG ARED Exercise &amp; Mass</small>
+                      <small>ARED Exercise</small>
                       <strong
                         className={
                           crew.countermeasureMin === null ? 'unknown-val' : ''
@@ -518,28 +468,6 @@ export function MissionConsole({
                           : 'Unknown'}
                       </strong>
                     </div>
-                    <span className="hazard-row-meta">
-                      {crew.bodyMassKg !== null ? `${crew.bodyMassKg} kg` : 'Mass Unknown'}
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    className="hazard-row-btn"
-                    onClick={() => focusPart('eye_l', 'organs')}
-                  >
-                    <Eye size={17} className="ok-txt" />
-                    <div className="hazard-row-copy">
-                      <small>Ocular &amp; Fluid Shift (SANS)</small>
-                      <strong
-                        className={crew.ocularCheck === null ? 'unknown-val' : ''}
-                      >
-                        {crew.ocularCheck ?? 'Unknown'}
-                      </strong>
-                    </div>
-                    <span className="hazard-row-meta">
-                      US: {ultrasoundAvailable ? 'Usable' : 'Blocked'}
-                    </span>
                   </button>
                 </div>
               </article>
@@ -548,14 +476,14 @@ export function MissionConsole({
                 <header className="command-card-header">
                   <div className="command-card-title">
                     <ClipboardList size={18} />
-                    <span>Reported Symptoms</span>
+                    <span>Symptoms</span>
                   </div>
                   <button
                     type="button"
                     className="mini-action-link"
                     onClick={() => go(1)}
                   >
-                    + Edit
+                    Edit
                   </button>
                 </header>
 
@@ -563,27 +491,21 @@ export function MissionConsole({
                   {crew.symptoms.length > 0 ? (
                     crew.symptoms.map((sym) => (
                       <div className="symptom-line" key={sym}>
-                        <span className="tiny-dot coral" aria-hidden="true" />
                         <span>{sym}</span>
-                        <span className="kpi-status-pill coral">REPORTED</span>
+                        <span className="kpi-status-pill coral">ACTIVE</span>
                       </div>
                     ))
                   ) : (
                     <div className="symptom-line">
-                      <span className="tiny-dot ok" aria-hidden="true" />
                       <span>None reported</span>
                       <span className="kpi-status-pill ok">CLEAR</span>
                     </div>
                   )}
                 </div>
               </article>
-
-              <div className="left-foot">
-                <ShieldCheck size={14} /> SYNTHETIC SAMPLE DATA · NOT FOR DIAGNOSIS
-              </div>
             </div>
 
-            {/* CENTER STAGE: INTERACTIVE 3D HUMAN ANATOMY EXPLORER */}
+            {/* CENTER STAGE: INTERACTIVE 3D HUMAN ANATOMY */}
             <BodyViewer
               selectedPart={selectedPart}
               setSelectedPart={setSelectedPart}
@@ -597,53 +519,12 @@ export function MissionConsole({
               setModelStatus={setModelStatus}
             />
 
-            {/* RIGHT STACK: SELECTED ANATOMY, NEXT-CHECK NAVIGATION & DATA COVERAGE */}
+            {/* RIGHT STACK: NEXT CHECK & SELECTED ANATOMY */}
             <div className="right-stack">
-              <article className="command-card selected-card">
-                <header className="command-card-header">
-                  <div className="command-card-title">
-                    <ScanLine size={18} />
-                    <span>Selected Anatomy</span>
-                  </div>
-                  <span className="realtime-tag">CLICK 3D MODEL</span>
-                </header>
-
-                <div className="selected-top">
-                  <div className="selected-organ-icon">
-                    <UserRound size={20} />
-                  </div>
-                  <div className="selected-title-wrap">
-                    <small>{part.system}</small>
-                    <h3>{part.label}</h3>
-                  </div>
-                  <span className="kpi-status-pill ok">SELECTED</span>
-                </div>
-
-                <p className="selected-desc">{part.description}</p>
-
-                <div className="selected-metric">
-                  <span>{part.metric}</span>
-                  <strong
-                    className={
-                      part.value.includes('Unknown') ? 'unknown-val' : ''
-                    }
-                  >
-                    {part.value}
-                  </strong>
-                </div>
-
-                {part.note && (
-                  <div className="part-note">
-                    <Info size={13} />
-                    <span>{part.note}</span>
-                  </div>
-                )}
-              </article>
-
               <article className="command-card next-check-status-card compact-nc">
                 <div className="nc-card-header">
                   <span className="wide-planetary-label left-aligned">
-                    N E X T - C H E C K
+                    N E X T &nbsp; C H E C K
                   </span>
                   <span className={`kpi-status-pill ${view.statusTone}`}>
                     {view.statusBadge}
@@ -691,60 +572,33 @@ export function MissionConsole({
                 </div>
               </article>
 
-              <article className="command-card coverage-card">
+              <article className="command-card selected-card">
                 <header className="command-card-header">
                   <div className="command-card-title">
-                    <Database size={18} />
-                    <span>Data Coverage</span>
+                    <ScanLine size={18} />
+                    <span>Selected Region</span>
                   </div>
-                  <button
-                    type="button"
-                    className="mini-action-link"
-                    onClick={() => go(4)}
-                  >
-                    Inventory →
-                  </button>
+                  <span className="kpi-status-pill ok">{part.system}</span>
                 </header>
 
-                <div className="coverage-content">
-                  <div
-                    className="coverage-circle"
-                    style={
-                      {
-                        '--pct': `${recordedPct}%`,
-                        '--unknown': `${recordedPct + unknownOnlyPct}%`,
-                      } as React.CSSProperties
+                <div className="selected-top">
+                  <div className="selected-organ-icon">
+                    <UserRound size={20} />
+                  </div>
+                  <div className="selected-title-wrap">
+                    <h3>{part.label}</h3>
+                  </div>
+                </div>
+
+                <div className="selected-metric">
+                  <span>{part.metric}</span>
+                  <strong
+                    className={
+                      part.value.includes('Unknown') ? 'unknown-val' : ''
                     }
                   >
-                    <div>
-                      <strong>{recordedPct}%</strong>
-                      <small>RECORDED</small>
-                    </div>
-                  </div>
-
-                  <div className="coverage-key">
-                    <div>
-                      <span>
-                        <span className="tiny-dot ok" aria-hidden="true" />
-                        Recorded ({recordedCount}/8)
-                      </span>
-                      <strong>{recordedPct}%</strong>
-                    </div>
-                    <div>
-                      <span>
-                        <span className="tiny-dot amber" aria-hidden="true" />
-                        Unknown ({unknownOnlyCount}/8)
-                      </span>
-                      <strong>{unknownOnlyPct}%</strong>
-                    </div>
-                    <div>
-                      <span>
-                        <span className="tiny-dot muted" aria-hidden="true" />
-                        No Sensor ({blockedBySensorCount}/8)
-                      </span>
-                      <strong>{blockedPct}%</strong>
-                    </div>
-                  </div>
+                    {part.value}
+                  </strong>
                 </div>
               </article>
             </div>
@@ -752,15 +606,14 @@ export function MissionConsole({
 
           {/* 7-DAY TELEMETRY TREND CARD */}
           <div className="dashboard-below-trend">
-
             <article className="orbital-trend-card">
               <div className="trend-card-head">
                 <div>
                   <span className="wide-planetary-label left-aligned">
-                    7 - D A Y &nbsp; T E L E M E T R Y &nbsp; T R E N D
+                    7 - D A Y &nbsp; T R E N D
                   </span>
                   <span className="trend-sub-val">
-                    {crew.id} · D174–D180 (Synthetic)
+                    {crew.id} · D174–D180
                   </span>
                 </div>
 
@@ -781,7 +634,7 @@ export function MissionConsole({
                     }`}
                     onClick={() => setTrendMode('rad')}
                   >
-                    Radiation (mSv)
+                    Radiation
                   </button>
                   <button
                     type="button"
@@ -796,7 +649,7 @@ export function MissionConsole({
               </div>
 
               <div className="trend-chart-wrap" onClick={() => go(2)}>
-                <ResponsiveContainer width="100%" height={195}>
+                <ResponsiveContainer width="100%" height={180}>
                   <AreaChart data={history}>
                     <defs>
                       <linearGradient id="cobaltGrad" x1="0" y1="0" x2="0" y2="1">
@@ -831,91 +684,6 @@ export function MissionConsole({
                 </ResponsiveContainer>
               </div>
             </article>
-          </div>
-
-          {/* ROW 4: CREW HEALTH ROSTER CARDS */}
-          <div className="roster-section-head">
-            <span className="wide-planetary-label left-aligned">
-              C R E W &nbsp; H E A L T H &nbsp; R O S T E R
-            </span>
-          </div>
-
-          <div className="crew-roster-grid">
-            {profiles.map((member) => {
-              const isSelected = member.id === crew.id;
-              const memberBp = isSelected ? bp : member.bp;
-              return (
-                <button
-                  key={member.id}
-                  type="button"
-                  className={`crew-roster-card ${isSelected ? 'active' : ''}`}
-                  onClick={() => onSelectCrew(member.id)}
-                >
-                  <div className="roster-card-top">
-                    <div>
-                      <strong>{member.id}</strong>
-                      <span>{member.role}</span>
-                    </div>
-                    <span
-                      className={`kpi-status-pill ${
-                        isSelected ? 'ok' : 'neutral'
-                      }`}
-                    >
-                      {isSelected ? 'ACTIVE' : 'VIEW'}
-                    </span>
-                  </div>
-
-                  <div className="roster-metrics-strip five-cols">
-                    <div className="roster-mini-stat">
-                      <small>HR</small>
-                      <b className={member.hr === null ? 'unknown-val' : ''}>
-                        {member.hr !== null ? `${member.hr} bpm` : 'Unknown'}
-                      </b>
-                    </div>
-                    <div className="roster-mini-stat">
-                      <small>SLEEP</small>
-                      <b className={member.sleep === null ? 'unknown-val' : ''}>
-                        {member.sleep !== null ? `${member.sleep} h` : 'Unknown'}
-                      </b>
-                    </div>
-                    <div className="roster-mini-stat">
-                      <small>BP</small>
-                      <b className={!memberBp ? 'unknown-val' : ''}>
-                        {memberBp ?? 'Unknown'}
-                      </b>
-                    </div>
-                    <div className="roster-mini-stat">
-                      <small>RAD</small>
-                      <b
-                        className={
-                          member.radiationDailyMsv === null ? 'unknown-val' : ''
-                        }
-                      >
-                        {member.radiationDailyMsv !== null
-                          ? `${member.radiationDailyMsv} mSv`
-                          : 'Unknown'}
-                      </b>
-                    </div>
-                    <div className="roster-mini-stat">
-                      <small>μG ARED</small>
-                      <b
-                        className={
-                          member.countermeasureMin === null ? 'unknown-val' : ''
-                        }
-                      >
-                        {member.countermeasureMin !== null
-                          ? `${member.countermeasureMin}m`
-                          : 'Unknown'}
-                      </b>
-                    </div>
-                  </div>
-
-                  <div className="roster-symptoms-line">
-                    Symptoms: {member.symptoms.join(', ') || 'None reported'}
-                  </div>
-                </button>
-              );
-            })}
           </div>
         </section>
       </div>
@@ -1000,7 +768,7 @@ export function MissionConsole({
                 ['Status:', view.status],
                 [
                   'Next check:',
-                  view.hasNextCheck ? view.nextCheckTitle : 'null (No next check)',
+                  view.hasNextCheck ? view.nextCheckTitle : 'None',
                 ],
               ].map(([k, v]) => (
                 <div className="telemetry-kv-row" key={k}>
@@ -1015,7 +783,7 @@ export function MissionConsole({
             <div className="wide-planetary-label left-aligned">
               C H E C K L I S T &nbsp; R A T I O N A L E
             </div>
-            <h3>Why This Next Step Was Selected</h3>
+            <h3>Selection Rationale</h3>
             <p>{view.selectedExplanation}</p>
             <p>{view.excludedExplanation}</p>
 
@@ -1023,11 +791,11 @@ export function MissionConsole({
 
             <div className="telemetry-kv-row compact">
               <dt>Data Source:</dt>
-              <dd>Synthetic Demo Record</dd>
+              <dd>Synthetic Telemetry</dd>
             </div>
             <div className="telemetry-kv-row compact">
               <dt>Clinical Scope:</dt>
-              <dd>Non-Diagnostic Check Navigation</dd>
+              <dd>Non-Diagnostic Navigation</dd>
             </div>
 
             <button
@@ -1036,7 +804,7 @@ export function MissionConsole({
               onClick={() => downloadJSON(crew, inventory, response)}
             >
               <Download size={16} />
-              <span>Download Demo JSON</span>
+              <span>Export JSON</span>
             </button>
           </aside>
         </div>
@@ -1073,12 +841,11 @@ export function MissionConsole({
         <div className="asymmetric-workspace-grid">
           <section className="left-telemetry-column" aria-label="What-if controls">
             <h1 className="section-sans-headline">
-              Simulate Health &amp; Equipment Conditions
+              Simulate Conditions
             </h1>
             <p className="telemetry-summary-copy">
-              Toggle missing measurements, blood-pressure monitor availability,
-              and manual safety override to compare deterministic next-check
-              selection.
+              Toggle measurement, equipment, and override states to preview
+              next-check routing.
             </p>
 
             <div className="preset-hairline-row">
@@ -1147,7 +914,7 @@ export function MissionConsole({
 
             <dl className="hairline-telemetry-list compact-list">
               <div className="telemetry-kv-row compact">
-                <dt>Engine Status:</dt>
+                <dt>Status:</dt>
                 <dd>{view.status}</dd>
               </div>
               <div className="telemetry-kv-row compact">
@@ -1165,7 +932,7 @@ export function MissionConsole({
                 <dd>
                   {view.nextCheckEquipment.length > 0
                     ? view.nextCheckEquipment.join(', ')
-                    : 'None (next_check: null)'}
+                    : 'None'}
                 </dd>
               </div>
               <div className="telemetry-kv-row compact">
@@ -1202,8 +969,8 @@ export function MissionConsole({
   // VIEW 2: HEALTH INVESTIGATION (EVIDENCE & NEXT-CHECK NAVIGATION)
   // ---------------------------------------------------------------------------
   return (
-    <div className="mission-console mars-configurator-screen">
-      <div className="mars-top-header">
+    <div className="mission-console space-subpage">
+      <div className="subpage-top-bar">
         <button
           type="button"
           className="hairline-pill-btn"
@@ -1213,7 +980,8 @@ export function MissionConsole({
         </button>
 
         <div className="wide-planetary-label">
-          H E A L T H &nbsp; I N V E S T I G A T I O N
+          H E A L T H &nbsp; I N V E S T I G A T I O N &nbsp; · &nbsp;{' '}
+          {crew.id.toUpperCase()}
         </div>
 
         <button
@@ -1258,260 +1026,225 @@ export function MissionConsole({
         </section>
       )}
 
-      {/* Upper 7-Day Vital, Radiation & Microgravity History Scrubber */}
-      <div className="vital-history-scrubber-bar">
-        <div className="gesture-360-overlay">
-          <div className="wide-planetary-label">
-            I n s p e c t &nbsp; 7 - D a y &nbsp; V i t a l &nbsp; &amp; &nbsp; R a d i a t i o n &nbsp; H i s t o r y
-          </div>
-          <div className="diamond-scrub-control">
-            <span className="scrub-line" />
-            <input
-              type="range"
-              min={0}
-              max={history.length - 1}
-              value={dayIndex}
-              onChange={(e) => setDayIndex(Number(e.target.value))}
-              aria-label="Scrub 7-day vital and radiation history"
-              className="diamond-range-input"
-            />
-            <span className="diamond-node" aria-hidden="true">
-              ◆
-            </span>
-            <span className="scrub-line" />
-          </div>
-          <span className="scrub-angle-readout">
-            {activeHistoryDay.day.toUpperCase()} · HR {dayHr ?? 'UNKNOWN'} BPM ·
-            SLEEP {daySleep ?? 'UNKNOWN'} HRS · RAD {dayRad ?? 'UNKNOWN'} mSv/d ·
-            μG {dayCounter ?? 'UNKNOWN'} MIN
-          </span>
+      {/* Crew Snapshot Strip */}
+      <section className="inv-snapshot-grid" aria-label="Crew telemetry summary">
+        <div className="inv-stat-card">
+          <span className="inv-stat-label">CREW MEMBER</span>
+          <strong>{crew.id}</strong>
+          <small>{crew.role}</small>
         </div>
-      </div>
+        <div className="inv-stat-card">
+          <span className="inv-stat-label">HEART RATE</span>
+          <strong className={crew.hr === null ? 'unknown-val' : ''}>
+            {crew.hr !== null ? `${crew.hr} bpm` : 'Unknown'}
+          </strong>
+          <small>Baseline {crew.baseline} bpm</small>
+        </div>
+        <div className="inv-stat-card">
+          <span className="inv-stat-label">BLOOD PRESSURE</span>
+          <strong className={!bp ? 'unknown-val' : ''}>
+            {bp ? `${bp} mmHg` : 'Unknown'}
+          </strong>
+          <small>{monitor ? 'Monitor available' : 'Monitor unavailable'}</small>
+        </div>
+        <div className="inv-stat-card">
+          <span className="inv-stat-label">RADIATION / ARED</span>
+          <strong className={crew.radiationDailyMsv === null ? 'unknown-val' : ''}>
+            {crew.radiationDailyMsv !== null
+              ? `${crew.radiationDailyMsv} mSv/d`
+              : 'Unknown'}
+          </strong>
+          <small>
+            Exercise{' '}
+            {crew.countermeasureMin !== null
+              ? `${crew.countermeasureMin}/${crew.countermeasureTargetMin} min`
+              : 'Unknown'}
+          </small>
+        </div>
+      </section>
 
-      {/* Lower Frosted Glass Evidence & Decision Trace Sheet */}
-      <div className="frosted-telemetry-sheet">
-        <div className="sheet-two-col-layout">
-          <div className="sheet-specs-col" aria-label="Evidence tiers">
-            <div className="inline-telemetry-specs">
-              <div className="spec-inline-row">
-                <span>Crew Member:</span>{' '}
-                <strong>
-                  {crew.id} ({crew.role})
-                </strong>
+      {/* Main Investigation Workspace */}
+      <div className="asymmetric-workspace-grid inv-workspace">
+        <section className="left-telemetry-column" aria-label="Evidence tiers">
+          <div className="inv-section-head">
+            <h1 className="section-sans-headline">Evidence &amp; Routing</h1>
+            <p className="telemetry-summary-copy">
+              Select any tier to inspect how recorded observations, missing data,
+              and equipment constraints shape the next check.
+            </p>
+          </div>
+
+          <div className="orbital-evidence-stack">
+            <div
+              className={`evidence-stage-card ${
+                focus.links.includes('known') ? 'linked' : ''
+              }`}
+            >
+              <div className="stage-card-head">
+                <span>01 · KNOWN OBSERVATIONS</span>
+                <span>RECORDED</span>
               </div>
-              <div className="spec-inline-row">
-                <span>Radiation Dose:</span>{' '}
-                <strong
-                  className={crew.radiationDailyMsv === null ? 'unknown-val' : ''}
-                >
-                  {crew.radiationDailyMsv !== null
-                    ? `${crew.radiationDailyMsv} mSv/d`
-                    : 'Unknown'}
-                </strong>
-              </div>
-              <div className="spec-inline-row">
-                <span>μG Exercise:</span>{' '}
-                <strong
-                  className={crew.countermeasureMin === null ? 'unknown-val' : ''}
-                >
-                  {crew.countermeasureMin !== null
-                    ? `${crew.countermeasureMin}/${crew.countermeasureTargetMin} min`
-                    : 'Unknown'}
-                </strong>
-              </div>
+              <button
+                type="button"
+                className={`evidence-item ${
+                  selected === 'readings' ? 'chosen' : ''
+                }`}
+                onClick={() => setSelected('readings')}
+                aria-pressed={selected === 'readings'}
+              >
+                <span>
+                  <strong>
+                    Vitals, radiation dosimetry &amp; microgravity load
+                  </strong>
+                  <small>
+                    HR {crew.hr ?? 'Unknown'} · Sleep {crew.sleep ?? 'Unknown'}{' '}
+                    · Rad{' '}
+                    {crew.radiationDailyMsv !== null
+                      ? `${crew.radiationDailyMsv} mSv/d`
+                      : 'Unknown'}{' '}
+                    · ARED{' '}
+                    {crew.countermeasureMin !== null
+                      ? `${crew.countermeasureMin}m`
+                      : 'Unknown'}
+                  </small>
+                </span>
+                <ArrowUpRight size={16} />
+              </button>
             </div>
 
-            <div className="orbital-evidence-stack">
-              <div
-                className={`evidence-stage-card ${
-                  focus.links.includes('known') ? 'linked' : ''
-                }`}
-              >
-                <div className="stage-card-head">
-                  <span>01 · KNOWN OBSERVATIONS</span>
-                  <span>RECORDED</span>
-                </div>
-                <button
-                  type="button"
-                  className={`evidence-item ${
-                    selected === 'readings' ? 'chosen' : ''
-                  }`}
-                  onClick={() => setSelected('readings')}
-                  aria-pressed={selected === 'readings'}
-                >
-                  <span>
-                    <strong>
-                      Vitals, radiation dosimetry &amp; microgravity load
-                    </strong>
-                    <small>
-                      HR {crew.hr ?? 'Unknown'} · Sleep {crew.sleep ?? 'Unknown'}{' '}
-                      · Rad{' '}
-                      {crew.radiationDailyMsv !== null
-                        ? `${crew.radiationDailyMsv} mSv/d`
-                        : 'Unknown'}{' '}
-                      · ARED{' '}
-                      {crew.countermeasureMin !== null
-                        ? `${crew.countermeasureMin}m`
-                        : 'Unknown'}
-                    </small>
-                  </span>
-                  <ArrowUpRight size={16} />
-                </button>
+            <div
+              className={`evidence-stage-card missing-stage ${
+                focus.links.includes('unknown') ? 'linked' : ''
+              }`}
+            >
+              <div className="stage-card-head">
+                <span>02 · MISSING &amp; EQUIPMENT</span>
+                <span>{missing.length ? 'INCOMPLETE' : 'COMPLETE'}</span>
               </div>
+              <button
+                type="button"
+                className={`evidence-item ${selected === 'bp' ? 'chosen' : ''}`}
+                onClick={() => setSelected('bp')}
+                aria-pressed={selected === 'bp'}
+              >
+                <span>
+                  <strong>Blood pressure &amp; microgravity ocular check</strong>
+                  <small className={!bp || !crew.ocularCheck ? 'unknown-val' : ''}>
+                    BP: {bp ? `${bp} mmHg` : 'Unknown'} · Ocular:{' '}
+                    {crew.ocularCheck ?? 'Unknown'}
+                  </small>
+                </span>
+                <ArrowUpRight size={16} />
+              </button>
 
-              <div
-                className={`evidence-stage-card missing-stage ${
-                  focus.links.includes('unknown') ? 'linked' : ''
+              <button
+                type="button"
+                className={`resource-link ${monitor ? 'available ' : ''}${
+                  selected === 'resources' ? 'chosen' : ''
                 }`}
+                onClick={() => setSelected('resources')}
+                aria-pressed={selected === 'resources'}
               >
-                <div className="stage-card-head">
-                  <span>02 · MISSING MEASUREMENTS</span>
-                  <span>{missing.length ? 'INCOMPLETE' : 'COMPLETE'}</span>
-                </div>
-                <button
-                  type="button"
-                  className={`evidence-item ${selected === 'bp' ? 'chosen' : ''}`}
-                  onClick={() => setSelected('bp')}
-                  aria-pressed={selected === 'bp'}
-                >
-                  <span>
-                    <strong>Blood pressure &amp; microgravity ocular check</strong>
-                    <small className={!bp || !crew.ocularCheck ? 'unknown-val' : ''}>
-                      BP: {bp ? `${bp} mmHg` : 'Unknown'} · Ocular:{' '}
-                      {crew.ocularCheck ?? 'Unknown'}
-                    </small>
-                  </span>
-                  <ArrowUpRight size={16} />
-                </button>
+                <span>
+                  {monitor
+                    ? 'BP monitor available'
+                    : 'Blocked: BP monitor unavailable'}{' '}
+                  · Ultrasound:{' '}
+                  {ultrasoundAvailable ? 'Available' : 'Unavailable'}
+                </span>
+                <ArrowUpRight size={15} />
+              </button>
+            </div>
 
-                <button
-                  type="button"
-                  className={`resource-link ${monitor ? 'available ' : ''}${
-                    selected === 'resources' ? 'chosen' : ''
-                  }`}
-                  onClick={() => setSelected('resources')}
-                  aria-pressed={selected === 'resources'}
-                >
-                  <span>
-                    {monitor
-                      ? 'BP monitor available'
-                      : 'Blocked: BP monitor unavailable'}{' '}
-                    · Ultrasound:{' '}
-                    {ultrasoundAvailable ? 'Available' : 'Unavailable'}
-                  </span>
-                  <ArrowUpRight size={15} />
-                </button>
+            <div
+              className={`evidence-stage-card next-stage ${
+                view.status === 'escalate' ? 'escalation ' : ''
+              }${focus.links.includes('next') ? 'linked' : ''}`}
+            >
+              <div className="stage-card-head">
+                <span>03 · RECOMMENDED NEXT CHECK</span>
+                <span>
+                  {view.status === 'escalate'
+                    ? 'ESCALATED'
+                    : view.hasNextCheck
+                    ? 'FEASIBLE'
+                    : 'NO CHECK'}
+                </span>
               </div>
-
-              <div
-                className={`evidence-stage-card next-stage ${
-                  view.status === 'escalate' ? 'escalation ' : ''
-                }${focus.links.includes('next') ? 'linked' : ''}`}
+              <button
+                type="button"
+                className={`evidence-item ${
+                  selected === 'next' ? 'chosen' : ''
+                }`}
+                onClick={() => setSelected('next')}
+                aria-pressed={selected === 'next'}
               >
-                <div className="stage-card-head">
-                  <span>03 · FEASIBLE NEXT CHECK</span>
-                  <span>
+                <span>
+                  <strong>{view.nextCheckTitle}</strong>
+                  <small>
+                    Status: {view.status} ·{' '}
                     {view.status === 'escalate'
-                      ? 'ESCALATED'
-                      : view.hasNextCheck
-                      ? 'FEASIBLE'
-                      : 'NEXT_CHECK: NULL'}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  className={`evidence-item ${
-                    selected === 'next' ? 'chosen' : ''
-                  }`}
-                  onClick={() => setSelected('next')}
-                  aria-pressed={selected === 'next'}
-                >
-                  <span>
-                    <strong>{view.nextCheckTitle}</strong>
-                    <small>
-                      Status: {view.status} ·{' '}
-                      {view.status === 'escalate'
-                        ? 'Manual emergency override'
-                        : 'Medical officer review required'}
-                    </small>
-                  </span>
-                  <ArrowUpRight size={16} />
-                </button>
-              </div>
+                      ? 'Manual emergency override'
+                      : 'Medical officer review required'}
+                  </small>
+                </span>
+                <ArrowUpRight size={16} />
+              </button>
             </div>
           </div>
+        </section>
 
-          <aside className="decision-trace" aria-label="Decision trace">
-            <div className="trace-header-line">
-              <span className="wide-planetary-label left-aligned">
-                D E C I S I O N &nbsp; T R A C E
-              </span>
-              <span
-                className={
-                  'trace-status ' +
-                  (view.status === 'escalate' ? 'escalation' : '')
-                }
-              >
-                {view.statusBadge}
-              </span>
-            </div>
-
-            <h2>{view.nextCheckTitle}</h2>
-
-            <div className="selection-context" aria-live="polite">
-              <strong>{focus.title}</strong>
-              <p>{focus.text}</p>
-            </div>
-
-            <div className="trace-section">
-              <span className="micro-label">WHY SELECTED</span>
-              <p>{view.selectedExplanation}</p>
-            </div>
-
-            <div className="trace-section">
-              <span className="micro-label">WHY EXCLUDED</span>
-              <p>{view.excludedExplanation}</p>
-            </div>
-
-            <div className="trace-section">
-              <span className="micro-label">REQUIRED EQUIPMENT</span>
-              <p>
-                {view.nextCheckEquipment.length > 0
-                  ? view.nextCheckEquipment.join(', ')
-                  : 'None (next_check: null)'}
-              </p>
-            </div>
-          </aside>
-        </div>
-
-        <div className="landing-zone-footer">
-          <div className="landing-zone-prompt">
-            Recommended Next Check &amp; Ground Handoff Record
-          </div>
-
-          <div className="segmented-launch-bar">
-            <button
-              type="button"
-              className="segmented-left-pill"
-              onClick={() => setDrawer(!drawer)}
+        <aside className="right-frosted-sheet decision-trace inv-decision-panel" aria-label="Decision trace">
+          <div className="trace-header-line">
+            <span className="wide-planetary-label left-aligned">
+              D E C I S I O N &nbsp; T R A C E
+            </span>
+            <span
+              className={
+                'trace-status ' +
+                (view.status === 'escalate' ? 'escalation' : '')
+              }
             >
-              <span>
-                {view.nextCheckTitle} · {crew.id}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="segmented-right-trigger"
-              onClick={() => go(5)}
-            >
-              <span>Incident Report</span>
-              <span className="launch-circle-icon">
-                <FileText size={16} />
-              </span>
-            </button>
+              {view.statusBadge}
+            </span>
           </div>
-        </div>
+
+          <h2>{view.nextCheckTitle}</h2>
+
+          <div className="selection-context" aria-live="polite">
+            <strong>{focus.title}</strong>
+            <p>{focus.text}</p>
+          </div>
+
+          <div className="trace-section">
+            <span className="micro-label">WHY SELECTED</span>
+            <p>{view.selectedExplanation}</p>
+          </div>
+
+          <div className="trace-section">
+            <span className="micro-label">WHY EXCLUDED</span>
+            <p>{view.excludedExplanation}</p>
+          </div>
+
+          <div className="trace-section">
+            <span className="micro-label">REQUIRED EQUIPMENT</span>
+            <p>
+              {view.nextCheckEquipment.length > 0
+                ? view.nextCheckEquipment.join(', ')
+                : 'None'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="ghost-rect-cta full-width inv-report-cta"
+            onClick={() => go(5)}
+          >
+            <FileText size={16} />
+            <span>Open Incident Report</span>
+            <ArrowUpRight size={16} />
+          </button>
+        </aside>
       </div>
     </div>
   );

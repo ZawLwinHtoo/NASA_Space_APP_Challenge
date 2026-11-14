@@ -58,9 +58,7 @@ export interface ScenarioResponse {
 }
 
 /**
- * Pure presentation adapter that reads either the real FastAPI/Engine response
- * (`API_CONTRACT.md`) or local mock fixtures without performing any medical
- * decision or ranking logic in the frontend.
+ * Display adapter for investigation responses. No decision logic.
  */
 export function formatInvestigationView(res: ScenarioResponse | null) {
   if (!res) {
@@ -69,13 +67,13 @@ export function formatInvestigationView(res: ScenarioResponse | null) {
       status: 'insufficient_evidence' as InvestigationStatus,
       statusBadge: 'INSUFFICIENT EVIDENCE',
       statusTone: 'amber' as 'ok' | 'amber' | 'coral',
-      nextCheckTitle: 'No feasible next check (next_check: null)',
+      nextCheckTitle: 'No next check',
       nextCheckEquipment: [] as string[],
       hasNextCheck: false,
       selectedExplanation:
-        'No permissible next check returned by the engine for the current observations and usable equipment.',
+        'No check available for current data and equipment.',
       excludedExplanation:
-        'Candidate checks requiring unavailable equipment or missing prerequisites are excluded by the engine.',
+        'Checks needing unavailable equipment are excluded.',
       resourceConstraintsList: [] as string[],
       observationsBp: null as string | null,
     };
@@ -96,8 +94,8 @@ export function formatInvestigationView(res: ScenarioResponse | null) {
   const excludedExplanation =
     typeof res.explanation === 'string'
       ? res.resource_constraints && Array.isArray(res.resource_constraints) && res.resource_constraints.length > 0
-        ? `Resource constraints reported by engine: ${res.resource_constraints.join(', ')}.`
-        : 'Evaluated deterministically by the backend decision engine.'
+        ? `Constraints: ${res.resource_constraints.join(', ')}.`
+        : 'No constraints reported.'
       : (res.explanation.excluded ?? '');
 
   const observationsBp =
@@ -135,15 +133,15 @@ export function formatInvestigationView(res: ScenarioResponse | null) {
   }
 
   return {
-    id: res.id ?? res.next_check?.id ?? 'ENGINE-RESPONSE',
+    id: res.id ?? res.next_check?.id ?? 'RESPONSE',
     status: res.status,
     statusBadge,
     statusTone,
     nextCheckTitle:
       nextTitle ??
       (res.status === 'escalate'
-        ? 'Follow approved emergency protocol (next_check: null)'
-        : 'No permissible next check (next_check: null)'),
+        ? 'Follow emergency protocol'
+        : 'No next check'),
     nextCheckEquipment: nextEquip,
     hasNextCheck: res.next_check !== null,
     selectedExplanation,

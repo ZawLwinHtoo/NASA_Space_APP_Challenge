@@ -17,8 +17,54 @@ type Props = {
 
 const VOICE_API_BASE = 'http://127.0.0.1:8000';
 
+const WORD_ONES: Record<string, number> = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5,
+  six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15,
+  sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+};
+
+const WORD_TENS: Record<string, number> = {
+  twenty: 20, thirty: 30, forty: 40, fifty: 50,
+  sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+};
+
+function normalizeSpokenNumbers(raw: string): string {
+  let s = raw
+    .toLowerCase()
+    .replace(/\bheart-rate\b/g, 'heart rate')
+    .replace(/\bb\.p\.\b/g, 'bp')
+    .replace(/\band a half\b/g, '.5')
+    .replace(/\bslash\b/g, '/');
+
+  // "one hundred twenty", "one twenty", "eighty-eight", "eighty eight"
+  s = s.replace(
+    /\b(?:(one)\s+(?:hundred\s+(?:and\s+)?)?)?(twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:[-\s]+(one|two|three|four|five|six|seven|eight|nine))?\b/g,
+    (_, hundred, tens, ones) => {
+      const val =
+        (hundred ? 100 : 0) +
+        WORD_TENS[tens] +
+        (ones ? WORD_ONES[ones] : 0);
+      return String(val);
+    }
+  );
+
+  s = s.replace(
+    /\b(one)\s+hundred\s+(?:and\s+)?(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)\b/g,
+    (_, _h, unit) => String(100 + WORD_ONES[unit])
+  );
+
+  s = s.replace(
+    /\b(zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen)\b/g,
+    (w) => String(WORD_ONES[w])
+  );
+
+  s = s.replace(/\b(\d+)\s+point\s+(\d+)\b/g, '$1.$2');
+  return s;
+}
+
 export function parseTranscriptToCheckIn(text: string): ParsedVoiceCheckIn {
-  const lower = text.toLowerCase();
+  const lower = normalizeSpokenNumbers(text);
   const result: ParsedVoiceCheckIn = {};
 
   if (/\b(no symptoms|none reported|feeling fine|no symptom)\b/.test(lower)) {
@@ -27,12 +73,25 @@ export function parseTranscriptToCheckIn(text: string): ParsedVoiceCheckIn {
   } else {
     const matched = symptomOptions.filter((sym) => {
       const s = sym.toLowerCase();
+      if (s === 'headache') {
+        return /\b(headache|head ache|headaches|migraine)\b/.test(lower);
+      }
+      if (s === 'dizziness') {
+        return /\b(dizziness|dizzy|dizzyness|lightheaded|vertigo)\b/.test(lower);
+      }
+      if (s === 'fatigue') {
+        return /\b(fatigue|fatigued|tired|exhausted|exhaustion)\b/.test(lower);
+      }
+      if (s === 'nausea') {
+        return /\b(nausea|nauseous|queasy)\b/.test(lower);
+      }
       if (s === 'muscle discomfort') {
         return (
           lower.includes('muscle discomfort') ||
           lower.includes('muscle ache') ||
           lower.includes('muscle pain') ||
-          lower.includes('soreness')
+          lower.includes('soreness') ||
+          lower.includes('muscle sore')
         );
       }
       return lower.includes(s);
@@ -193,7 +252,10 @@ export function VoiceCheckIn({ onApply }: Props) {
       };
 
       source.connect(processor);
-      processor.connect(ctx.destination);
+      const silentGain = ctx.createGain();
+      silentGain.gain.value = 0;
+      processor.connect(silentGain);
+      silentGain.connect(ctx.destination);
 
       setRecording(true);
       timerRef.current = window.setInterval(() => {

@@ -1,24 +1,23 @@
 import type { ScenarioResponse } from '../types/scenario';
 
-// Exact finite lookup: monitor, BP record, Earth link, manual override.
-// These are authored UI examples matching the engine statuses (`needs_review`,
-// `insufficient_evidence`, `escalate`), not medical recommendations or validated protocols.
+// Synthetic responses keyed by: monitor, BP record, Earth link, override.
+// Not medical advice.
 const authored = {
   blocked: {
     status: 'needs_review',
     next_check: {
       id: 'repeat_symptom_and_hr_recheck_15m',
-      label: 'Repeat symptom and heart-rate recheck in 15 minutes (prototype)',
-      title: 'Repeat symptom and heart-rate recheck in 15 minutes',
+      label: 'Recheck symptoms and HR in 15 min',
+      title: 'Recheck symptoms and HR in 15 min',
       requires_equipment: ['pulse_ox_or_hr_sensor'],
       equipment: ['Crew check-in tablet'],
       prototype_only: true,
     },
     explanation: {
       selected:
-        'Blood pressure is unknown and the BP monitor is unavailable. The engine selects a feasible symptom and heart-rate recheck using available equipment.',
+        'BP unknown. BP monitor unavailable. HR recheck selected.',
       excluded:
-        'A blood-pressure recording check is excluded because bp_monitor is unavailable.',
+        'BP check excluded: monitor unavailable.',
     },
   },
   insufficient: {
@@ -26,43 +25,43 @@ const authored = {
     next_check: null,
     explanation: {
       selected:
-        'Insufficient evidence to select a routine check while required blood-pressure observation and monitor remain unavailable in this simulation.',
+        'Insufficient evidence. BP and monitor unavailable.',
       excluded:
-        'No permissible next check is returned (next_check: null); missing observations remain explicitly flagged for medical-officer review.',
+        'No next check. Missing data flagged for officer review.',
     },
   },
   measure: {
     status: 'needs_review',
     next_check: {
       id: 'record_bp_observation',
-      label: 'Record blood-pressure observation with available monitor (prototype)',
-      title: 'Record blood-pressure observation',
+      label: 'Record blood pressure',
+      title: 'Record blood pressure',
       requires_equipment: ['bp_monitor'],
       equipment: ['Blood-pressure monitor'],
       prototype_only: true,
     },
     explanation: {
       selected:
-        'This fixture pairs a missing blood-pressure record with an available monitor, subject to medical-officer review.',
+        'BP missing. Monitor available. Record BP.',
       excluded:
-        'A completed-record review is excluded because the blood-pressure observation is still missing.',
+        'Record review excluded: BP missing.',
     },
   },
   review: {
     status: 'needs_review',
     next_check: {
       id: 'review_observation_record',
-      label: 'Review recorded observations with medical officer (prototype)',
-      title: 'Review the observation record',
+      label: 'Officer review of observations',
+      title: 'Officer review of observations',
       requires_equipment: ['crew_tablet'],
       equipment: ['Crew check-in tablet'],
       prototype_only: true,
     },
     explanation: {
       selected:
-        'This example includes a blood-pressure record. It moves to officer review without interpreting the readings.',
+        'BP recorded. Send to officer review.',
       excluded:
-        'The missing-record workflow is excluded because a synthetic observation is present.',
+        'Missing-data check excluded: BP present.',
     },
   },
   escalation: {
@@ -70,9 +69,9 @@ const authored = {
     next_check: null,
     explanation: {
       selected:
-        'Manual emergency override active. Follow approved crew emergency medical protocol and contact medical officer.',
+        'Emergency override active. Follow emergency protocol. Contact medical officer.',
       excluded:
-        'All routine next checks are bypassed (next_check: null). No procedure or treatment is generated.',
+        'Routine checks bypassed. No treatment generated.',
     },
   },
 } as const;
