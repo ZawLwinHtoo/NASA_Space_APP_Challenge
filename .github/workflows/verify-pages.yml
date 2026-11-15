@@ -1,0 +1,37 @@
+name: Verify public MEDNAV website
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [MEDNAV-v1]
+    paths:
+      - .github/workflows/verify-pages.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verify public HTML and application assets
+        run: |
+          python - <<'PY'
+          import re
+          import urllib.request
+          from urllib.parse import urljoin
+          url = 'https://zawlwinhtoo.github.io/NASA_Space_APP_Challenge/'
+          with urllib.request.urlopen(url, timeout=30) as response:
+              html = response.read().decode()
+              print(f'Public website: HTTP {response.status}: {url}')
+          assets = re.findall(r'(?:src|href)="([^"]+\.(?:js|css))"', html)
+          assert assets, 'No application assets found'
+          for asset in assets:
+              target = urljoin(url, asset)
+              with urllib.request.urlopen(target, timeout=30) as response:
+                  data = response.read()
+                  assert data, 'Empty application asset'
+                  print(f'Application asset: HTTP {response.status}, {len(data)} bytes: {target}')
+          print('PASS: public website and all application assets are reachable from GitHub Actions.')
+          PY
