@@ -1,5 +1,33 @@
 # MEDNAV teammate setup — Windows
 
+## Updating your local code from `Final` (and `main`)
+
+The latest integrated MEDNAV build is published on **`Final`** (and **`main`** has been updated to match `Final`).
+
+- **Fresh checkout of `Final`:**
+  ```powershell
+  git fetch origin
+  git checkout -B Final origin/Final
+  ```
+- **Sync your local `main`** *(note: `origin/main` was force-updated to `Final`)*:
+  ```powershell
+  git fetch origin
+  git checkout main
+  git reset --hard origin/main
+  ```
+- **Merge `Final` updates into your feature branch:**
+  ```powershell
+  git fetch origin
+  git merge origin/Final
+  ```
+- **Install any updated frontend/backend dependencies after pulling:**
+  ```powershell
+  npm --prefix frontend install
+  backend/.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
+  ```
+
+---
+
 Use this guide for `feature/body-system-monitoring-v1` (BodyGraph v3, including v1/v2 monitoring and follow-up). No teammate's checkout, virtual environment, database or installed model is required. The original integrated demo remains on `integration/first-live-demo`.
 
 ## Prerequisites
