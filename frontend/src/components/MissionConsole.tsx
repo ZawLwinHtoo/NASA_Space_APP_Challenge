@@ -250,6 +250,7 @@ export function MissionConsole({
         bp: isLast ? bp : null,
         symptoms: isLast ? crew.symptoms : [],
         recorded_at: `2026-11-${String(9 + idx).padStart(2, '0')}T08:00:00Z`,
+        synthetic: true,
         provenance: 'Synthetic fixture history',
       };
     });
@@ -318,7 +319,6 @@ export function MissionConsole({
     (crew.sleep !== null ? 1 : 0) +
     (bp !== null ? 1 : 0);
 
-  const crewKey = crew.id.slice(-1).toLowerCase() as 'a' | 'b' | 'c';
   const activeHistoryDay = history[dayIndex] ?? history[history.length - 1] ?? {} as typeof fixtureHistory[number];
   const dayHr = activeHistoryDay[crewKey];
   const daySleep = activeHistoryDay[`s${crewKey}` as 'sa' | 'sb' | 'sc'];
@@ -700,16 +700,10 @@ export function MissionConsole({
                 records={effectiveRecords}
                 loading={live ? historyLoading : false}
                 error={live ? historyError : ''}
-                onRegion={(region, id) => {
-                  if (id) selectReplay(id);
-                  focusPart(region, 'organs');
-                  document.querySelector('.selected-card')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                }}
                 onReplay={(id) => {
                   selectReplay(id);
                   document.querySelector('.selected-card')?.scrollIntoView({ block: 'center', behavior: 'instant' });
                 }}
-                onInvestigate={(id) => (onInvestigate ? onInvestigate(id) : go(2))}
               />
             </article>
           </div>
