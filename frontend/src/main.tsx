@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useBackend } from './api';
+import { PAGES_DEMO, useBackend } from './api';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowUpRight,
@@ -185,6 +185,7 @@ function App() {
         </header>
 
         <main id="main">
+          {PAGES_DEMO && <p role="status" className="sheet-footnote">Public synthetic demo. Changes last for this session. Investigation, saved reports, medication stock and local voice services require the Python backend.</p>}
           <GlobalCrewAlertBanner
             alerts={globalCrewAlerts}
             activeCrewId={crewId}
@@ -217,7 +218,7 @@ function App() {
             go={go}
           />
         )}
-        {page === 5 && <IncidentReportPage crewId={crewId} go={go} />}
+        {page === 5 && (backend.live ? <IncidentReportPage crewId={crewId} go={go} /> : <Panel title="Incident Report"><p>Saved reports and PDF generation require the Python backend. This browser demo does not store reports.</p></Panel>)}
 
         {page === 1 && (!backend.live||backend.initialized) && (
           <CheckIn
@@ -249,7 +250,7 @@ function App() {
           />
         )}
 
-        <VoiceAssistant crew={crew.id} onNavigate={(target) => go(({ dashboard: 0, crew: 0, trends: 0, investigation: 2, inventory: 4, reports: 5, research: 0, settings: 0 } as const)[target])} />
+        {!PAGES_DEMO && <VoiceAssistant crew={crew.id} onNavigate={(target) => go(({ dashboard: 0, crew: 0, trends: 0, investigation: 2, inventory: 4, reports: 5, research: 0, settings: 0 } as const)[target])} />}
 
         <footer>
           <span>MEDNAV · ASTRONAUT HEALTH MONITORING</span>
@@ -370,7 +371,7 @@ function CheckIn({
           {saved ? (
             <div className="checkin-saved-box">
               <p role="status" className="status-success">
-                <Check size={18} /> Saved to local health log for {crew.id}.
+                <Check size={18} /> {live ? `Saved to local health log for ${crew.id}.` : `Updated synthetic demo for ${crew.id} for this session only.`}
               </p>
               <button className="ghost-rect-cta" onClick={investigate}>
                 <span>Open Investigation</span>
