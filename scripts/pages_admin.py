@@ -23,7 +23,8 @@ def api(path, method='GET', payload=None):
         method=method, headers={'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'User-Agent': 'MEDNAV-Pages-Deploy', 'Content-Type': 'application/json'})
     try:
         with urllib.request.urlopen(req, timeout=25) as response:
-            return json.load(response)
+            body = response.read()
+            return json.loads(body) if body else {'status': response.status}
     except urllib.error.HTTPError as error:
         if error.code == 404 and method == 'GET':
             return None
