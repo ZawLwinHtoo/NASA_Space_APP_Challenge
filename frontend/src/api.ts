@@ -17,6 +17,7 @@ import type {
   CrewProactiveAlertDTO,
 } from './types/api';
 import {displayProfile, recordedProfile} from './types/api';
+export const PAGES_DEMO = (import.meta as unknown as {env:Record<string,string>}).env.VITE_PAGES_DEMO === 'true';
 export const API = (import.meta as unknown as {env:Record<string,string>}).env.VITE_API_URL || 'http://127.0.0.1:8000/api/v1';
 async function request<T>(path:string, method='GET', body?:unknown, extraHeaders?:Record<string,string>):Promise<T>{
   let response:Response;
@@ -103,7 +104,7 @@ export const reportApi = {
   },
 };
 export function useBackend(crewId:string,refreshOnFocus=true){
- const live=new URLSearchParams(location.search).get('mode')!=='fixture';
+ const live=!PAGES_DEMO && new URLSearchParams(location.search).get('mode')!=='fixture';
  const [profiles,setProfiles]=useState(crews),[inventory,setInventory]=useState(equipment),[medications,setMedications]=useState<MedicationStockDTO[]>([]),[flags,setFlags]=useState([false,false,false,false]);
  const [result,setResult]=useState<ScenarioResponse|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[ready,setReady]=useState(!live),[revision,setRevision]=useState(0);
  const [historyState,setHistoryState]=useState<{crewId:string;rows:Saved[];loading:boolean;error:string;syncedAt:string}>({crewId:'',rows:[],loading:false,error:'',syncedAt:''});
