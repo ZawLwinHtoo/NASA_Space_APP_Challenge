@@ -1,6 +1,7 @@
 # GitHub Pages demo
 
-Source branch: `MEDNAV-v1`. Public output branch: `gh-pages`.
+Source branch: `Final`. GitHub Actions builds and deploys on pushes to `Final`.
+The previous `gh-pages` output remains available as deployment history.
 
 The Pages build uses `VITE_PAGES_DEMO=true` and Vite base
 `/NASA_Space_APP_Challenge/`. This explicitly selects the existing synthetic
@@ -13,8 +14,13 @@ backend and are not provided by GitHub Pages. Data does not sync across devices.
 
 Build from `frontend/` with `npm ci`, then set `VITE_PAGES_DEMO=true` and run
 `npm run build -- --base=/NASA_Space_APP_Challenge/`.
-Publish only `frontend/dist/` to `gh-pages`, with an empty `.nojekyll` file.
-Select `gh-pages` / root under repository Settings → Pages.
+The `.github/workflows/pages.yml` workflow uploads `frontend/dist/` and deploys
+with the official GitHub Pages actions. Repository Settings → Pages uses
+GitHub Actions. A `deployment.json` file records the exact Final commit deployed.
+
+Files changed for this deployment: the Pages frontend build guards, smoke check,
+deployment workflow, Pages helper and this usage note. Dependencies remain locked
+by `frontend/package-lock.json`; no backend contracts are changed.
 
 Acceptance criteria: the public dashboard and session check-in render under
 the repository subpath at desktop and phone sizes, no localhost API or voice

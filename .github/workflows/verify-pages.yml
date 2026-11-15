@@ -3,7 +3,7 @@ name: Verify public MEDNAV website
 on:
   workflow_dispatch:
   push:
-    branches: [MEDNAV-v1]
+    branches: [Final]
     paths:
       - .github/workflows/verify-pages.yml
 

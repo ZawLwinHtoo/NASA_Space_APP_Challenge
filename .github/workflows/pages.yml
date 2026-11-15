@@ -1,0 +1,80 @@
+name: Deploy Final to GitHub Pages
+
+on:
+  push:
+    branches: [Final]
+    paths:
+      - frontend/**
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: mednav-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/configure-pages@v5
+      - name: Install locked frontend dependencies
+        run: npm ci
+        working-directory: frontend
+      - name: Build public synthetic demo
+        run: npm run build -- --base=/NASA_Space_APP_Challenge/
+        working-directory: frontend
+        env:
+          VITE_PAGES_DEMO: 'true'
+      - name: Record deployment source
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          pathlib.Path('frontend/dist/deployment.json').write_text(json.dumps({'branch': 'Final', 'commit': os.environ['GITHUB_SHA']}))
+          PY
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: frontend/dist
+      - name: Deploy GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify public Final deployment
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          python - <<'PY'
+          import json, os, re, time, urllib.request
+          from urllib.parse import urljoin
+          url = os.environ['PAGE_URL']
+          for attempt in range(12):
+              try:
+                  with urllib.request.urlopen(urljoin(url, 'deployment.json') + '?sha=' + os.environ['GITHUB_SHA'], timeout=20) as response:
+                      source = json.load(response)
+                  assert source['branch'] == 'Final' and source['commit'] == os.environ['GITHUB_SHA'], source
+                  break
+              except Exception:
+                  if attempt == 11: raise
+                  time.sleep(5)
+          with urllib.request.urlopen(url, timeout=20) as response:
+              html = response.read().decode()
+              print(f'Public site: HTTP {response.status}: {url}')
+          for asset in re.findall(r'(?:src|href)="([^"]+\.(?:js|css))"', html):
+              with urllib.request.urlopen(urljoin(url, asset), timeout=20) as response:
+                  assert response.read()
+                  print(f'Application asset: HTTP {response.status}: {asset}')
+          print('Verified deployed Final commit:', source['commit'])
+          PY

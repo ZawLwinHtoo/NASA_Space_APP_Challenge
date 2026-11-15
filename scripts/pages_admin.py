@@ -38,3 +38,13 @@ elif sys.argv[1] == 'enable':
     print(json.dumps(api('/pages', 'PUT' if current else 'POST', {'build_type': 'legacy', 'source': {'branch': 'gh-pages', 'path': '/'}})))
 elif sys.argv[1] == 'status':
     print(json.dumps({'pages': api('/pages'), 'build': api('/pages/builds/latest')}))
+elif sys.argv[1] == 'workflow':
+    print(json.dumps(api('/pages', 'PUT', {'build_type': 'workflow'})))
+elif sys.argv[1] == 'environment':
+    print(json.dumps({'environment': api('/environments/github-pages'), 'branches': api('/environments/github-pages/deployment-branch-policies')}))
+elif sys.argv[1] == 'allow-final':
+    policies = api('/environments/github-pages/deployment-branch-policies')
+    if any(p['name'] == 'Final' and p['type'] == 'branch' for p in policies['branch_policies']):
+        print('Final branch already allowed')
+    else:
+        print(json.dumps(api('/environments/github-pages/deployment-branch-policies', 'POST', {'name': 'Final', 'type': 'branch'})))
