@@ -232,11 +232,36 @@ export function MissionConsole({
     return selectedIndex>=0?selectedIndex:Math.max(0,history.length-1);
   });
   const [selectedPart, setSelectedPart] = useState('brain');
+  const crewKey = crew.id.slice(-1).toLowerCase() as 'a' | 'b' | 'c';
+  const bp = live ? crew.bp : flags[1] ? (crew.bp ?? null) : null;
+
+  const fixtureRecords = useMemo<SavedCheckIn[]>(() => {
+    return history.map((h, idx) => {
+      const isLast = idx === history.length - 1;
+      const hrVal = isLast ? crew.hr : (h[crewKey] ?? crew.hr);
+      const sleepVal = isLast
+        ? crew.sleep
+        : (h[`s${crewKey}` as 'sa' | 'sb' | 'sc'] ?? crew.sleep);
+      return {
+        id: `FIX-${crew.id.replace(/\s+/g, '')}-D${174 + idx}`,
+        astronaut_id: crew.id,
+        hr: hrVal ?? null,
+        sleep: sleepVal ?? null,
+        bp: isLast ? bp : null,
+        symptoms: isLast ? crew.symptoms : [],
+        recorded_at: `2026-11-${String(9 + idx).padStart(2, '0')}T08:00:00Z`,
+        provenance: 'Synthetic fixture history',
+      };
+    });
+  }, [history, crew, crewKey, bp]);
+
+  const effectiveRecords = live ? liveRecords : fixtureRecords;
+
   const [replaySelection,setReplaySelection]=useState<{crewId:string;id:string}|null>(null);
   useEffect(()=>setReplaySelection(null),[crew.id]);
   const replayId=replaySelection?.crewId===crew.id?replaySelection.id:null;
-  let bodyHistory:SavedCheckIn[]=[],bodyRecord:SavedCheckIn|undefined,replayError=historyError;
-  if(live&&!historyLoading&&!historyError){try{const window=replayWindow(liveRecords,crew.id,replayId);bodyHistory=window.history;bodyRecord=window.record;}catch(e){replayError=(e as Error).message;}}
+  let bodyHistory:SavedCheckIn[]=[],bodyRecord:SavedCheckIn|undefined,replayError=live?historyError:'';
+  if((!live||(!historyLoading&&!historyError))&&effectiveRecords.length){try{const window=replayWindow(effectiveRecords,crew.id,replayId);bodyHistory=window.history;bodyRecord=window.record;}catch(e){replayError=(e as Error).message;}}
   const selectReplay=(id:string|null)=>setReplaySelection(id?{crewId:crew.id,id}:null);
   const [layerMode, setLayerMode] = useState<AnatomyLayerMode>('xray');
   const [autoRotate, setAutoRotate] = useState(false);
@@ -262,7 +287,7 @@ export function MissionConsole({
   const view = formatInvestigationView(response);
 
   const focus = evidence[selected];
-  const bp = live ? crew.bp : flags[1] ? (crew.bp ?? view.observationsBp ?? null) : null;
+  const effectiveBp = live ? crew.bp : flags[1] ? (crew.bp ?? view.observationsBp ?? null) : null;
   const monitor = flags[0];
 
   const dosimeterAvailable =
@@ -607,34 +632,33 @@ export function MissionConsole({
                   </div>
                 </div>
 
-                {live && (
-                  <BodyGraphNavigator
-                    crew={crew}
-                    records={liveRecords}
-                    history={bodyHistory}
-                    record={bodyRecord}
-                    replaying={replayId !== null}
-                    part={selectedPart}
-                    loading={historyLoading}
-                    error={replayError}
-                    onReplay={selectReplay}
-                    onPart={(key) => {
-                      const system = BODY_SYSTEMS.find((s) => s.part === key);
-                      focusPart(key, system?.mode ?? 'organs');
-                    }}
-                    onInvestigate={(id) => onInvestigate?.(id)}
-                  />
-                )}
-                {live && bodyRegion(selectedPart) ? (
+                <BodyGraphNavigator
+                  crew={crew}
+                  records={effectiveRecords}
+                  history={bodyHistory}
+                  record={bodyRecord}
+                  replaying={replayId !== null}
+                  part={selectedPart}
+                  loading={live ? historyLoading : false}
+                  error={replayError}
+                  onReplay={selectReplay}
+                  onPart={(key) => {
+                    const system = BODY_SYSTEMS.find((s) => s.part === key);
+                    focusPart(key, system?.mode ?? 'organs');
+                  }}
+                  onInvestigate={(id) => (onInvestigate ? onInvestigate(id) : go(2))}
+                />
+                {bodyRegion(selectedPart) ? (
                   <BodySystemMonitoring
                     part={selectedPart}
                     crew={crew}
                     records={bodyHistory}
-                    loading={historyLoading}
+                    loading={live ? historyLoading : false}
                     error={replayError}
                     replaying={replayId !== null}
                     onInvestigate={() => {
                       if (bodyRecord && onInvestigate) onInvestigate(bodyRecord.id);
+                      else go(2);
                     }}
                   />
                 ) : (
@@ -659,7 +683,7 @@ export function MissionConsole({
               <div className="trend-card-head">
                 <div>
                   <span className="wide-planetary-label left-aligned">
-                    {live ? 'S A V E D  H E A L T H  H I S T O R Y' : <>7 - D A Y &nbsp; T R E N D</>}
+                    S A V E D &nbsp; H E A L T H &nbsp; H I S T O R Y
                   </span>
                 </div>
 
@@ -670,55 +694,23 @@ export function MissionConsole({
                 </div>
               </div>
 
-              {live ? (
-                <MissionHealthTimeline
-                  key={crew.id}
-                  crew={crew}
-                  records={liveRecords}
-                  loading={historyLoading}
-                  error={historyError}
-                  onReplay={(id) => {
-                    selectReplay(id);
-                    document.querySelector('.selected-card')?.scrollIntoView({ block: 'center', behavior: 'instant' });
-                  }}
-                />
-              ) : (
-                <div className="trend-chart-wrap" onClick={() => go(2)}>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <AreaChart data={history}>
-                    <defs>
-                      <linearGradient id="cobaltGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop
-                          offset="0%"
-                          stopColor={trendColor}
-                          stopOpacity={0.45}
-                        />
-                        <stop
-                          offset="100%"
-                          stopColor={trendColor}
-                          stopOpacity={0.0}
-                        />
-                      </linearGradient>
-                    </defs>
-                    <XAxis
-                      dataKey="day"
-                      stroke="rgba(255,255,255,0.35)"
-                      tick={{ fill: '#A1A1AA', fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Area
-                      isAnimationActive={false}
-                      type="monotone"
-                      dataKey={trendDataKey}
-                      stroke={trendColor}
-                      strokeWidth={2}
-                      fill="url(#cobaltGrad)"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-                </div>
-              )}
+              <MissionHealthTimeline
+                key={crew.id}
+                crew={crew}
+                records={effectiveRecords}
+                loading={live ? historyLoading : false}
+                error={live ? historyError : ''}
+                onRegion={(region, id) => {
+                  if (id) selectReplay(id);
+                  focusPart(region, 'organs');
+                  document.querySelector('.selected-card')?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }}
+                onReplay={(id) => {
+                  selectReplay(id);
+                  document.querySelector('.selected-card')?.scrollIntoView({ block: 'center', behavior: 'instant' });
+                }}
+                onInvestigate={(id) => (onInvestigate ? onInvestigate(id) : go(2))}
+              />
             </article>
           </div>
         </section>
